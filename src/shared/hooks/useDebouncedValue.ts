@@ -1,0 +1,11 @@
+import { useEffect, useState } from "react";
+
+/** Valor que só muda depois de `ms` sem alteração (busca enquanto digita). */
+export function useDebouncedValue<T>(value: T, ms = 300): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return debounced;
+}
