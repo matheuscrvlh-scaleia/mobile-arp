@@ -314,6 +314,19 @@ export function filterByCategory(
     .filter((d) => d.events.length > 0);
 }
 
+/**
+ * Mês da agenda (filtro por mês, Fase 2): `offset` meses antes (negativo) ou depois do
+ * mês de `today`. Devolve o intervalo inteiro do mês (do dia 1 ao último).
+ */
+export function monthRange(today: string, offset: number): AgendaRange & { days: string[] } {
+  const [y, m] = today.split("-").map(Number) as [number, number];
+  const first = new Date(Date.UTC(y, m - 1 + offset, 1));
+  const last = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0));
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const from = iso(first);
+  return { from, to: iso(last), days: dateRange(from, last.getUTCDate()) };
+}
+
 /** "Novembro 2026" */
 export function monthYearLabel(iso: string): string {
   const d = parseISODate(iso);

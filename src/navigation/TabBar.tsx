@@ -22,7 +22,7 @@ import {
 const TABS: Record<string, { label: string; icon: IconName }> = {
   index: { label: "Início", icon: "house" },
   cupons: { label: "Cupons", icon: "ticket-percent" },
-  desafios: { label: "Selos", icon: "award" },
+  desafios: { label: "Clube", icon: "award" },
   mapa: { label: "Mapa", icon: "map" },
 };
 

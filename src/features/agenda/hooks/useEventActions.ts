@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Share } from "react-native";
 import type { EventDetail } from "@/contracts/app/agenda";
 import { toast } from "@/design";
 import { addToDeviceCalendar } from "../lib/calendar";
+import { openShareEventSheet } from "../sheets/share-event";
 
 const CALENDAR_FAILED = "Não foi possível abrir o calendário do aparelho";
 
@@ -10,12 +10,8 @@ const CALENDAR_FAILED = "Não foi possível abrir o calendário do aparelho";
 export function useEventActions(event: EventDetail) {
   const [addingToCalendar, setAddingToCalendar] = useState(false);
 
-  const share = () => {
-    Share.share({
-      title: event.title,
-      message: `${event.title} na ARP\narp://evento/${event.id}`,
-    }).catch(() => undefined);
-  };
+  // WhatsApp (com foto e texto pela prévia do link) ou copiar o link
+  const share = () => openShareEventSheet(event);
 
   const addToCalendar = () => {
     if (addingToCalendar) return;

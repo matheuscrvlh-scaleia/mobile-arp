@@ -4,9 +4,10 @@ import {
   BottomSpacer,
   Chip,
   EmptyState,
+  IconButton,
   layout,
   NavHeader,
-  Pill,
+  PressableScale,
   ScreenContainer,
   Skeleton,
   SkeletonCard,
@@ -23,32 +24,35 @@ import { DayStrip } from "../components/DayStrip";
 import { EventRow } from "../components/EventRow";
 import { LongEventCard } from "../components/LongEventCard";
 import {
-  AGENDA_WINDOW_DAYS,
   categoriesOf,
-  dateRange,
   filterByCategory,
   hasShortEvent,
   indexDays,
+  monthRange,
   monthYearLabel,
   sectionDayLabel,
   upcomingAfter,
-  upcomingAgendaRange,
 } from "../lib/occurrence";
-
-/** Faixa de dias visível (a janela carregada é `upcomingAgendaRange`). */
-const STRIP_DAYS = 14;
 
 export default function AgendaScreen() {
   const today = toISODate(useNow(MINUTE_MS));
-  const query = useAgenda(upcomingAgendaRange(today));
+  // Filtro por mês (Fase 2): 0 = mês atual; as setas voltam e avançam entre meses.
+  const [offset, setOffset] = useState(0);
+  const month = monthRange(today, offset);
+  const query = useAgenda(month);
   // O dia escolhido é guardado como data: na virada da meia-noite a faixa anda,
   // mas a escolha continua no mesmo dia (ou cai em "hoje", se ele já passou).
   const [picked, setPicked] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const refreshControl = useRefreshControl(query.refetch);
 
-  const strip = dateRange(today, STRIP_DAYS);
-  const selected = picked && strip.includes(picked) ? picked : today;
+  const strip = month.days;
+  const selected =
+    picked && strip.includes(picked) ? picked : strip.includes(today) ? today : month.from;
+  const changeMonth = (delta: number) => {
+    setOffset((o) => o + delta);
+    setPicked(null);
+  };
 
   const allDays = query.data?.days ?? [];
   const categories = categoriesOf(allDays);
@@ -63,6 +67,7 @@ export default function AgendaScreen() {
   const shorts = dayEvents.filter((e) => !e.isLongRunning);
   const upcoming = upcomingAfter(days, selected, 4, new Set(shorts.map((e) => e.id)));
   const total = dayEvents.length;
+  const monthLabel = monthYearLabel(month.from);
 
   const view = queryView(query);
 
@@ -81,8 +86,8 @@ export default function AgendaScreen() {
     content = (
       <EmptyState
         icon="calendar-days"
-        title="Agenda vazia por enquanto"
-        text={`Ainda não há eventos nos próximos ${AGENDA_WINDOW_DAYS} dias. Volte em breve.`}
+        title="Nenhum evento neste mês"
+        text={`Não há eventos em ${monthLabel.toLowerCase()}. Use as setas para ver outros meses.`}
       />
     );
   } else {
@@ -139,15 +144,52 @@ export default function AgendaScreen() {
 
   return (
     <ScreenContainer top="none" scroll scrollProps={{ refreshControl }}>
-      <NavHeader right={<Pill label={monthYearLabel(selected)} icon="calendar-days" />} />
+      <NavHeader
+        right={
+          <View style={styles.monthNav}>
+            <IconButton
+              icon="chevron-left"
+              size={38}
+              variant="white"
+              accessibilityLabel="Mês anterior"
+              onPress={() => changeMonth(-1)}
+            />
+            <Text variant="bodyStrong" weight={700} style={styles.monthLabel} align="center">
+              {monthLabel}
+            </Text>
+            <IconButton
+              icon="chevron-right"
+              size={38}
+              variant="white"
+              accessibilityLabel="Próximo mês"
+              onPress={() => changeMonth(1)}
+            />
+          </View>
+        }
+      />
       <View style={styles.titleWrap}>
         <Text variant="title" accessibilityRole="header">
           Agenda
         </Text>
+        {offset !== 0 ? (
+          <PressableScale onPress={() => changeMonth(-offset)} accessibilityRole="button">
+            <Text variant="small" weight={600} tone="textMuted">
+              Voltar para hoje
+            </Text>
+          </PressableScale>
+        ) : null}
       </View>
 
       <View style={styles.strip}>
-        <DayStrip days={strip} selected={selected} onSelect={setPicked} marked={marked} />
+        {/* key: trocar de mês remonta a faixa, que abre no dia escolhido */}
+        <DayStrip
+          key={month.from}
+          days={strip}
+          today={today}
+          selected={selected}
+          onSelect={setPicked}
+          marked={marked}
+        />
       </View>
 
       {categories.length > 1 ? (
@@ -191,7 +233,15 @@ function AgendaSkeleton() {
 }
 
 const styles = StyleSheet.create({
-  titleWrap: { paddingHorizontal: layout.gutter, marginTop: 14 },
+  titleWrap: {
+    paddingHorizontal: layout.gutter,
+    marginTop: 14,
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+  },
+  monthNav: { flexDirection: "row", alignItems: "center", gap: 4 },
+  monthLabel: { minWidth: 118 },
   strip: { marginTop: 18 },
   chips: { gap: 8, paddingHorizontal: layout.gutter, paddingTop: 4 },
   longs: { marginTop: 18, gap: 12 },

@@ -16,8 +16,10 @@ const DAY_W = 58;
 const GAP = 8;
 
 export type DayStripProps = {
-  /** Datas "YYYY-MM-DD"; a primeira é hoje. */
+  /** Datas "YYYY-MM-DD" (o mês escolhido na agenda). */
   days: readonly string[];
+  /** Hoje ("YYYY-MM-DD"): ganha o rótulo "hoje" quando está na faixa. */
+  today: string;
   selected: string;
   onSelect: (iso: string) => void;
   /** Dias com ponto (evento que não é longo). */
@@ -26,7 +28,7 @@ export type DayStripProps = {
 
 /** Faixa de dias (.days / .day): "hoje" + dia da semana curto, ponto quando há evento.
     O dia escolhido é um chip ligado: `inverse` (escuro no claro, claro no escuro). */
-export function DayStrip({ days, selected, onSelect, marked }: DayStripProps) {
+export function DayStrip({ days, today, selected, onSelect, marked }: DayStripProps) {
   const colors = useColors();
   const styles = useStyles();
   const onMuted = withAlpha(colors.onInverse, 0.6);
@@ -44,6 +46,8 @@ export function DayStrip({ days, selected, onSelect, marked }: DayStripProps) {
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.row}
+      // abre já no dia escolhido (hoje, no mês atual), com o anterior à vista
+      contentOffset={{ x: Math.max(0, (days.indexOf(selected) - 1) * (DAY_W + GAP)), y: 0 }}
     >
       {days.map((iso, i) => {
         const on = iso === selected;
@@ -53,12 +57,12 @@ export function DayStrip({ days, selected, onSelect, marked }: DayStripProps) {
           <PressableScale
             key={iso}
             onPress={() => select(iso, i)}
-            accessibilityLabel={`${i === 0 ? "Hoje, " : ""}${formatLongDate(d)}${has ? ", com eventos" : ""}`}
+            accessibilityLabel={`${iso === today ? "Hoje, " : ""}${formatLongDate(d)}${has ? ", com eventos" : ""}`}
             accessibilityState={{ selected: on }}
             style={[styles.day, on && styles.dayOn]}
           >
             <Text style={styles.small} color={on ? onMuted : colors.textMuted}>
-              {capitalize(i === 0 ? "hoje" : weekdayName(d, true))}
+              {capitalize(iso === today ? "hoje" : weekdayName(d, true))}
             </Text>
             <Text style={styles.num} tone={on ? "onInverse" : "text"} tabular>
               {d.getDate()}

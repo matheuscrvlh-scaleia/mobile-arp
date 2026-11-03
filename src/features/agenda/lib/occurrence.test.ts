@@ -10,6 +10,7 @@ import {
   filterByCategory,
   hasShortEvent,
   longEventLabel,
+  monthRange,
   monthYearLabel,
   nextEnd,
   nextStart,
@@ -255,5 +256,19 @@ describe("agenda", () => {
     const cine = filterByCategory(days, "cat-cine");
     expect(cine).toEqual([{ date: "2026-11-02", events: [days[1]?.events[1]] }]);
     expect(filterByCategory(days, null)).toHaveLength(5);
+  });
+});
+
+describe("monthRange", () => {
+  it("mês atual inteiro, inclusive os dias que já passaram", () => {
+    const r = monthRange("2026-11-03", 0);
+    expect(r.from).toBe("2026-11-01");
+    expect(r.to).toBe("2026-11-30");
+    expect(r.days).toHaveLength(30);
+  });
+  it("volta e avança entre anos", () => {
+    expect(monthRange("2026-01-15", -1).from).toBe("2025-12-01");
+    expect(monthRange("2026-12-15", 1).to).toBe("2027-01-31");
+    expect(monthRange("2028-01-10", 1).days).toHaveLength(29);
   });
 });

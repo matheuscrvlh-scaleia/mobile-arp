@@ -47,8 +47,8 @@ export function ShortcutGrid({ couponCount }: { couponCount: number | undefined 
       onPress: go("/cupons"),
     },
     { icon: "map", label: "Mapa", onPress: go("/mapa") },
-    { icon: "award", label: "Desafios", variant: "dark", onPress: go("/desafios") },
-    { icon: "car", label: "Estacionar", onPress: openParkingSheet },
+    { icon: "award", label: "Clube ARP", variant: "dark", onPress: go("/desafios") },
+    { icon: "car", label: "Estacionamento", onPress: openParkingSheet },
     { icon: "compass", label: "Tour", onPress: openTourSheet },
   ];
 
@@ -90,7 +90,7 @@ function ShortcutItem({ item }: { item: Shortcut }) {
           </View>
         ) : null}
       </View>
-      <Text style={styles.label} tone="textSecondary" numberOfLines={1}>
+      <Text style={styles.label} tone="textSecondary" numberOfLines={2}>
         {item.label}
       </Text>
     </PressableScale>
@@ -136,5 +136,6 @@ const useStyles = createStyles((t) => ({
     justifyContent: "center",
   },
   badgeText: { fontFamily: fontFamily(750), fontSize: 11, lineHeight: 13 },
-  label: { fontFamily: fontFamily(600), fontSize: 13, lineHeight: 17 },
+  // rótulos longos (Estacionamento, Circuito Cultural) quebram em até 2 linhas
+  label: { fontFamily: fontFamily(600), fontSize: 11.5, lineHeight: 14, textAlign: "center" },
 }));
