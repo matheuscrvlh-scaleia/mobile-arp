@@ -65,6 +65,7 @@ function GuestProfile() {
       <Menu>
         <AppearanceItem />
         <MerchantItem />
+        <ContentItems />
         <MenuItem icon="info" label="Sobre a ARP" onPress={openAboutSheet} last />
       </Menu>
       <BottomSpacer kind="safe" />
@@ -214,6 +215,7 @@ function SignedInProfile() {
         />
         <AppearanceItem />
         <MerchantItem />
+        <ContentItems />
         <MenuItem icon="info" label="Sobre a ARP" onPress={openAboutSheet} />
         <MenuItem icon="log-out" label="Sair" danger noChevron onPress={signOut} last />
       </Menu>
@@ -277,3 +279,18 @@ const styles = StyleSheet.create({
   cardsSkeleton: { paddingHorizontal: layout.gutter, gap: 12 },
   statsSkeleton: { flexDirection: "row", gap: 10 },
 });
+
+/** Conteúdo da ARP no menu (Fase 2), com pouco destaque: vagas e textos. */
+function ContentItems() {
+  const router = useRouter();
+  const text = (key: "history" | "rules" | "club_rules") => () =>
+    router.push({ pathname: "/texto/[key]", params: { key } });
+  return (
+    <>
+      <MenuItem icon="briefcase" label="Vagas na ARP" onPress={() => router.push("/vagas")} />
+      <MenuItem icon="landmark" label="Nossa história" onPress={text("history")} />
+      <MenuItem icon="book-open" label="Regras da ARP" onPress={text("rules")} />
+      <MenuItem icon="medal" label="Regulamento do Clube ARP" onPress={text("club_rules")} />
+    </>
+  );
+}

@@ -1,6 +1,13 @@
 import type * as App from "@/contracts/app";
 import { APP_ROUTES } from "@/contracts/app/routes";
 import type { ListOf, Paginated } from "@/contracts/common";
+import type {
+  ArtPoint,
+  ContentPage,
+  ContentPageKey,
+  Job,
+  RecyclingItem,
+} from "@/contracts/content";
 import { request } from "./http";
 
 /*
@@ -17,6 +24,11 @@ const R = APP_ROUTES;
  */
 const S: typeof import("@/contracts/app") | null = __DEV__
   ? (require("@/contracts/app") as typeof import("@/contracts/app"))
+  : null;
+
+/** Conteúdo da ARP (Fase 2): schemas do pacote do painel, também só em dev. */
+const C: typeof import("@/contracts/content") | null = __DEV__
+  ? (require("@/contracts/content") as typeof import("@/contracts/content"))
   : null;
 
 type Signal = { signal?: AbortSignal };
@@ -137,6 +149,31 @@ export const appApi = {
       }),
     setInterest: (id: string, on: boolean) =>
       request({ route: on ? R.agenda.interest : R.agenda.removeInterest, params: { id } }),
+  },
+
+  /** Textos, Circuito Cultural, Sustentarp e vagas (públicos). */
+  content: {
+    page: (key: ContentPageKey, { signal }: Signal = {}) =>
+      request<ContentPage>({
+        route: R.content.page,
+        params: { key },
+        schema: C?.contentPageSchema,
+        signal,
+      }),
+    artPoints: ({ signal }: Signal = {}) =>
+      request<ListOf<ArtPoint>>({
+        route: R.content.artPoints,
+        schema: C?.artPointListSchema,
+        signal,
+      }),
+    recycling: ({ signal }: Signal = {}) =>
+      request<ListOf<RecyclingItem>>({
+        route: R.content.recycling,
+        schema: C?.recyclingItemListSchema,
+        signal,
+      }),
+    jobs: ({ signal }: Signal = {}) =>
+      request<ListOf<Job>>({ route: R.content.jobs, schema: C?.jobListSchema, signal }),
   },
 
   coupons: {

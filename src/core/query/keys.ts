@@ -21,6 +21,10 @@ export const queryKeys = {
   storesAll: () => ["public", "stores"] as const,
   store: (idOrSlug: string) => ["public", "stores", "detail", idOrSlug] as const,
   map: () => ["public", "map"] as const,
+  contentPage: (key: string) => ["public", "content", "page", key] as const,
+  artPoints: () => ["public", "content", "art-points"] as const,
+  recycling: () => ["public", "content", "recycling"] as const,
+  jobs: () => ["public", "content", "jobs"] as const,
   agenda: (from: string, to: string, categoryId?: string) =>
     ["public", "agenda", { from, to, categoryId }] as const,
   agendaAll: () => ["public", "agenda"] as const,

@@ -11,7 +11,7 @@ export function openParkingSheet(): void {
       <SheetIcon name="car" background="chrome" color="brand" />
       <SheetTitle>Estacionamento</SheetTitle>
       <SheetText>
-        Pague o estacionamento pelo app e ganhe o selo <Bold>Sem Fila</Bold> no mesmo instante. A
+        Pague o estacionamento pelo app e ganhe o selo <Bold>Passe Livre</Bold> no mesmo instante. A
         integração com o sistema do estacionamento ainda será definida.
       </SheetText>
       <SheetActions>
@@ -22,32 +22,6 @@ export function openParkingSheet(): void {
           onPress={closeThen(() => openPath("/mapa"))}
         />
         <Button label="Agora não" variant="soft" onPress={close} />
-      </SheetActions>
-    </>
-  ));
-}
-
-export function openTourSheet(): void {
-  sheet.open(({ closeThen }) => (
-    <>
-      <SheetIcon name="compass" background="brand" />
-      <SheetTitle>Tour da ARP</SheetTitle>
-      <SheetText>
-        Um passeio de 40 minutos pela história da fábrica, os blocos e a praça. No fim, leia o QR
-        Code e ganhe o selo <Bold>Explorador</Bold>.
-      </SheetText>
-      <SheetActions>
-        <Button
-          label="Ver ponto de início no mapa"
-          iconLeft="flag"
-          variant="dark"
-          onPress={closeThen(() => openPath("/mapa"))}
-        />
-        <Button
-          label="Ver todos os desafios"
-          variant="soft"
-          onPress={closeThen(() => openPath("/desafios"))}
-        />
       </SheetActions>
     </>
   ));

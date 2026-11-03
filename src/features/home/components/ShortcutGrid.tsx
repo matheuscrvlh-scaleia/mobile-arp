@@ -12,7 +12,7 @@ import {
 } from "@/design";
 import { STORE_KIND_OPTIONS } from "@/features/stores";
 import { openPath } from "@/navigation/navigate";
-import { openParkingSheet, openTourSheet } from "./ShortcutSheets";
+import { openParkingSheet } from "./ShortcutSheets";
 
 type Variant = "default" | "brand" | "dark";
 type Shortcut = {
@@ -49,7 +49,8 @@ export function ShortcutGrid({ couponCount }: { couponCount: number | undefined 
     { icon: "map", label: "Mapa", onPress: go("/mapa") },
     { icon: "car", label: "Estacionamento", onPress: openParkingSheet },
     { icon: "award", label: "Clube ARP", variant: "dark", onPress: go("/desafios") },
-    { icon: "compass", label: "Tour", onPress: openTourSheet },
+    { icon: "palette", label: "Circuito Cultural", onPress: go("/circuito") },
+    { icon: "recycle", label: "Sustentarp", onPress: go("/sustentarp") },
   ];
 
   return (

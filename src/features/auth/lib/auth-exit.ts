@@ -6,7 +6,15 @@
  * senha (entrar → senha/esqueci → senha/nova) também é tela de conta.
  */
 
-const AUTH_ROUTES = new Set(["entrar", "cadastro", "boas-vindas", "senha/esqueci", "senha/nova"]);
+// texto/[key]: no primeiro acesso, a história e as regras ficam por cima do cadastro.
+const AUTH_ROUTES = new Set([
+  "entrar",
+  "cadastro",
+  "boas-vindas",
+  "senha/esqueci",
+  "senha/nova",
+  "texto/[key]",
+]);
 
 export type AuthExit = { kind: "dismiss"; count: number } | { kind: "home" };
 

@@ -37,6 +37,37 @@ function finishExit(): void {
   pendingAction.run();
 }
 
+type Router = ReturnType<typeof useRouter>;
+
+/** Sai das telas de conta (e do primeiro acesso) de volta para onde o visitante estava. */
+function exitAuthFlow(router: Router, routeNames: readonly string[]): void {
+  completing = true;
+  const plan = authExit(routeNames);
+  if (plan.kind === "dismiss") {
+    router.dismiss(plan.count);
+  } else {
+    // Só telas de conta na pilha (boas-vindas, link direto): as abas entram no lugar delas.
+    if (router.canDismiss()) router.dismissAll();
+    router.replace("/");
+  }
+  setTimeout(finishExit, EXIT_FALLBACK_MS);
+}
+
+/**
+ * Fim do primeiro acesso (Nossa história → Regras da ARP, Fase 2): sai do
+ * cadastro e dos textos e roda a ação pendente (ex.: pegar o cupom).
+ */
+export function useFinishOnboarding() {
+  const navigation = useNavigation();
+  const router = useRouter();
+  return () => {
+    exitAuthFlow(router, navigation.getState()?.routes.map((route) => route.name) ?? []);
+    setTimeout(() => {
+      void offerPushNotifications({ force: true });
+    }, PUSH_OFFER_DELAY_MS);
+  };
+}
+
 /**
  * Fecha o fluxo de conta depois de entrar/cadastrar: guarda a sessão, sai das
  * telas de conta de volta para onde o visitante estava, dá as boas-vindas e,
@@ -72,20 +103,17 @@ export function useCompleteAuth({ keepPendingOnLeave = false } = {}) {
     onboarding.markDone();
     haptic.success();
 
-    completing = true;
-    const plan = authExit(navigation.getState()?.routes.map((route) => route.name) ?? []);
-    if (plan.kind === "dismiss") {
-      router.dismiss(plan.count);
-    } else {
-      // Só telas de conta na pilha (boas-vindas, link direto): as abas entram no lugar delas.
-      if (router.canDismiss()) router.dismissAll();
-      router.replace("/");
-    }
-    setTimeout(finishExit, EXIT_FALLBACK_MS);
-
     toast.show(WELCOME[kind](firstName(session.visitor.name)), "party-popper", { haptic: "none" });
+
+    // Conta nova: primeiro a história e as regras da ARP; a saída acontece no fim delas.
+    if (kind === "signup") {
+      router.push({ pathname: "/texto/[key]", params: { key: "history", boasVindas: "1" } });
+      return;
+    }
+
+    exitAuthFlow(router, navigation.getState()?.routes.map((route) => route.name) ?? []);
     setTimeout(() => {
-      void offerPushNotifications({ force: kind === "signup" });
+      void offerPushNotifications();
     }, PUSH_OFFER_DELAY_MS);
   };
 }
