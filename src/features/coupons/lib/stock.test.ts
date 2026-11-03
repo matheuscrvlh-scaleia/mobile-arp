@@ -47,6 +47,7 @@ function coupon(id: string, total: number, remaining: number): CouponCard {
     icon: "beer",
     imageUrl: null,
     savingsCents: 500,
+    weekdays: [0, 1, 2, 3, 4, 5, 6],
     stock: { total, remaining },
   };
 }
@@ -69,6 +70,7 @@ function claim(id: string, expiresAt: string, status: Claim["status"] = "active"
       icon: "beer",
       imageUrl: null,
       savingsCents: 500,
+      weekdays: [0, 1, 2, 3, 4, 5, 6],
     },
     store,
   };

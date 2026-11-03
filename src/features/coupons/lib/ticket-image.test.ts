@@ -24,6 +24,7 @@ const claim = {
     icon: "utensils",
     imageUrl: null,
     savingsCents: null,
+    weekdays: [0, 1, 2, 3, 4, 5, 6] as number[],
   },
   store: {
     id: "s1",

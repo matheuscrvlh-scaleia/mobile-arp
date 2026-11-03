@@ -72,6 +72,13 @@ export function failureFromError(
         "Este cupom é de outra loja",
         "Ele só pode ser usado na loja da promoção. Confira no ticket do cliente o nome da loja.",
       );
+    case "CLAIM_WRONG_DAY":
+      // A API diz os dias ("Recusado: este cupom só vale seg, ter…").
+      return sheet(
+        "calendar-days",
+        isApiError(error) ? error.message : "Hoje não é dia deste cupom",
+        "O lojista escolheu os dias em que o cupom vale. O cliente pode usar num desses dias, dentro do prazo.",
+      );
     case "VALIDATION_ERROR":
       return sheet(
         "circle-alert",

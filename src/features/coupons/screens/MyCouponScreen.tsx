@@ -12,6 +12,7 @@ import {
   createStyles,
   EmptyState,
   NavHeader,
+  Pill,
   RadialGlow,
   radii,
   ScreenContainer,
@@ -32,6 +33,7 @@ import { TicketSnapshot } from "../components/TicketSnapshot";
 import { useSaveTicketImage } from "../hooks/useSaveTicketImage";
 import { WALLET_TABS } from "../lib/claim-cache";
 import { effectiveStatus } from "../lib/claim-status";
+import { validDaysLabel, validToday } from "../lib/weekdays";
 
 const GLOW_CENTER = { x: 0.85, y: -0.15 };
 
@@ -156,6 +158,15 @@ export default function MyCouponScreen() {
           backVariant="white"
           right={active ? <TicketHeaderActions onShare={share} onSave={save} /> : undefined}
         />
+        {active && claim && !validToday(claim.coupon.weekdays) ? (
+          <View style={styles.notToday}>
+            <Pill
+              label={`Hoje não é dia de usar. ${validDaysLabel(claim.coupon.weekdays)}.`}
+              icon="circle-alert"
+              variant="clay"
+            />
+          </View>
+        ) : null}
         {body}
         <BottomSpacer kind="safe" extra={16} />
       </ScrollView>
@@ -181,4 +192,5 @@ const useStyles = createStyles((t) => ({
     borderRadius: radii.cardLg,
   },
   skeleton: { marginTop: 18, marginHorizontal: 20 },
+  notToday: { marginTop: 12, marginHorizontal: 20, alignItems: "flex-start" },
 }));

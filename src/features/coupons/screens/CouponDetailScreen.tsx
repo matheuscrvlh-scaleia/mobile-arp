@@ -34,6 +34,7 @@ import { CouponRules } from "../components/CouponRules";
 import { StockGrid } from "../components/StockGrid";
 import { StoreRow } from "../components/StoreRow";
 import { isSoldOut } from "../lib/stock";
+import { validDaysLabel, validToday } from "../lib/weekdays";
 import { openNotAvailableSheet } from "../sheets/not-available";
 
 export default function CouponDetailScreen() {
@@ -227,6 +228,19 @@ function CouponDetailView({ coupon, placeholder, refreshControl, onRefresh }: Vi
             {coupon.scheduleNote ? (
               <Pill label={coupon.scheduleNote} icon="calendar-days" style={styles.when} />
             ) : null}
+            <Pill
+              label={validDaysLabel(coupon.weekdays)}
+              icon="calendar-check"
+              style={styles.when}
+            />
+            {validToday(coupon.weekdays) ? null : (
+              <Pill
+                label="Hoje não vale: pegue e use num dia certo"
+                icon="circle-alert"
+                variant="clay"
+                style={styles.when}
+              />
+            )}
           </View>
           <StockGrid stock={coupon.stock} mine={!!myClaim} />
           {coupon.description ? (
