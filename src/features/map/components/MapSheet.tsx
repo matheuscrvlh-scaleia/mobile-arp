@@ -16,15 +16,14 @@ import {
   useTabBarInset,
   withAlpha,
 } from "@/design";
-import { MonoTile, ResultRow, storeLocation } from "@/features/stores";
+import { MonoTile, ResultRow, STORE_KIND_OPTIONS, storeLocation } from "@/features/stores";
 import type { QueryView } from "@/shared/query/query-view";
 import { type MapCategory, type MapFloor, type MapPin, matchesPin } from "../lib/map-geometry";
 
 const CHIPS = [
-  { value: "all", label: "Tudo", icon: "layout-grid" },
-  { value: "food", label: "Comer", icon: "utensils" },
-  { value: "shop", label: "Comprar", icon: "shopping-bag" },
-] as const;
+  { value: "all", label: "Tudo", icon: "layout-grid" } as const,
+  ...STORE_KIND_OPTIONS,
+];
 
 type Props = {
   floor: MapFloor | undefined;

@@ -77,7 +77,8 @@ export function findPin(
 }
 
 export function matchesPin(pin: MapPin, category: MapCategory, q: string): boolean {
-  return (category === "all" || pin.kind === category) && matchesQuery(pin.name, q);
+  // a loja pode estar em mais de uma categoria (Fase 2)
+  return (category === "all" || pin.kinds.includes(category)) && matchesQuery(pin.name, q);
 }
 
 /** Árvores da praça, nas mesmas posições relativas do protótipo (praça 160 × 72). */

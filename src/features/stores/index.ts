@@ -11,5 +11,6 @@ export {
 export { MonoTile, ResultRow } from "./components/ResultRow";
 export { StoreCard, StoreCardSkeleton } from "./components/StoreCard";
 export { formatHoursToday, openStatus } from "./lib/hours";
+export { parseStoreKind, STORE_KIND_ICONS, STORE_KIND_OPTIONS } from "./lib/kinds";
 export { shortBlock, storeLocation } from "./lib/location";
 export { type StoreFilters, storeFilters } from "./lib/store-filters";

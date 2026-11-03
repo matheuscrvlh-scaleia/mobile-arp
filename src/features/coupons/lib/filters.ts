@@ -1,20 +1,22 @@
 /* Chips da vitrine de cupons → consulta da API (+ filtro que o protótipo faz no cliente). */
 import type { CouponCard, ListCouponsQuery } from "@/contracts/app/coupons";
+import { STORE_KIND_LABEL, type StoreKind, storeKindSchema } from "@/contracts/directory";
 import { isEnding } from "./stock";
 
-export type CouponFilter = "all" | "food" | "shop" | "ending";
+export type CouponFilter = "all" | StoreKind | "ending";
 
+/** Todos, as 3 categorias (Lojas, Gastronomia, Serviços) e Acabando. */
 export const COUPON_FILTERS: readonly { value: CouponFilter; label: string; icon?: "flame" }[] = [
   { value: "all", label: "Todos" },
-  { value: "food", label: "Comer e beber" },
-  { value: "shop", label: "Lojas" },
+  ...storeKindSchema.options.map((k) => ({ value: k, label: STORE_KIND_LABEL[k] })),
   { value: "ending", label: "Acabando", icon: "flame" },
 ];
 
 export function couponQueryFor(filter: CouponFilter): Partial<ListCouponsQuery> {
   switch (filter) {
-    case "food":
     case "shop":
+    case "food":
+    case "service":
       return { kind: filter };
     case "ending":
       return { sort: "ending" };

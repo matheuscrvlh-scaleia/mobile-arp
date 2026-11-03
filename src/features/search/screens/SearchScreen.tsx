@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { STORE_KIND_LABEL, type StoreKind } from "@/contracts/directory";
+import { STORE_KIND_LABEL, type StoreKind, storeKindSchema } from "@/contracts/directory";
 import { mediaUrl } from "@/core/api/media";
 import { kv } from "@/core/storage/kv";
 import {
@@ -30,7 +30,7 @@ import { SEARCH_MIN, useCouponSearch, useStoreSearch } from "../api/search";
 import { filterEvents } from "../lib/events-search";
 import { parseRecent, pushRecent, RECENT_SEARCHES_KEY } from "../lib/recent-searches";
 
-const KINDS: StoreKind[] = ["food", "shop"];
+const KINDS: readonly StoreKind[] = storeKindSchema.options;
 /** Busca da API: acima disso ela recusa (400). */
 const QUERY_MAX = 120;
 /** Espera o visitante parar de digitar (menos chamadas por busca). */
@@ -184,7 +184,7 @@ export default function SearchScreen() {
                   actionLabel="Ver todas"
                   onAction={() =>
                     go(
-                      `/lojas?tipo=${storeHits[0]?.category.kind ?? "food"}&q=${encodeURIComponent(q)}`,
+                      `/lojas?tipo=${storeHits[0]?.category.kind ?? "shop"}&q=${encodeURIComponent(q)}`,
                     )
                   }
                 />

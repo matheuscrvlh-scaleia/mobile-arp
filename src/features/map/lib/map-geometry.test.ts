@@ -19,6 +19,7 @@ const pin = (slug: string, kind: "food" | "shop", name: string) => ({
   icon: "store",
   brandColor: "#000000",
   kind,
+  kinds: [kind],
   x: 100,
   y: 120,
 });

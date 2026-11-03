@@ -2,9 +2,9 @@ import { useRouter } from "expo-router";
 import { type ReactNode, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import type { EventCard } from "@/contracts/app/agenda";
-import type { StoreKind } from "@/contracts/directory";
+import { STORE_KIND_LABEL, type StoreKind, storeKindSchema } from "@/contracts/directory";
 import { EmptyState, layout, SectionHeader, type TabItem, Tabs } from "@/design";
-import { StoreCard, StoreCardSkeleton } from "@/features/stores";
+import { STORE_KIND_ICONS, StoreCard, StoreCardSkeleton } from "@/features/stores";
 import { useNow } from "@/shared/hooks/useNow";
 import { toISODate } from "@/shared/lib/format";
 import { MINUTE_MS } from "@/shared/lib/time";
@@ -14,15 +14,20 @@ import { useHomeStores } from "../api/home";
 import { pairs } from "../lib/home";
 import { EventDCard } from "./EventDCard";
 
-type Tab = "events" | "food" | "shop";
+type Tab = "events" | StoreKind;
 
 const TABS: readonly TabItem<Tab>[] = [
   { value: "events", label: "Eventos" },
-  { value: "food", label: "Comer" },
-  { value: "shop", label: "Comprar" },
+  ...storeKindSchema.options.map((k) => ({ value: k, label: STORE_KIND_LABEL[k] })),
 ];
 
-/** "Hoje na ARP": abas Eventos | Comer | Comprar e grade de 2 colunas (.dgrid). */
+const EMPTY_TITLE: Record<StoreKind, string> = {
+  shop: "Nenhuma loja por aqui",
+  food: "Nenhum restaurante por aqui",
+  service: "Nenhum serviço por aqui",
+};
+
+/** "Hoje na ARP": abas Eventos | Lojas | Gastronomia | Serviços e grade de 2 colunas (.dgrid). */
 export function TodaySection({ events }: { events: readonly EventCard[] }) {
   const [tab, setTab] = useState<Tab>("events");
   const today = toISODate(useNow(MINUTE_MS));
@@ -81,8 +86,8 @@ function StoresGrid({ kind }: { kind: StoreKind }) {
     return (
       <EmptyState
         compact
-        icon={kind === "food" ? "utensils" : "shopping-bag"}
-        title={kind === "food" ? "Nenhum restaurante por aqui" : "Nenhuma loja por aqui"}
+        icon={STORE_KIND_ICONS[kind]}
+        title={EMPTY_TITLE[kind]}
         text="Volte mais tarde para ver as novidades."
         action={{
           label: "Explorar",

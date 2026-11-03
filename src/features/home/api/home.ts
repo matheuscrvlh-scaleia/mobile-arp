@@ -1,5 +1,5 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query";
-import type { StoreKind } from "@/contracts/directory";
+import { type StoreKind, storeKindSchema } from "@/contracts/directory";
 import { appApi } from "@/core/api/app-api";
 import { queryKeys } from "@/core/query/keys";
 import { useStores } from "@/features/stores";
@@ -15,7 +15,7 @@ export function useHome() {
   });
 }
 
-/** Filtro das 4 lojas de "Hoje na ARP" (Comer / Comprar). */
+/** Filtro das 4 lojas de "Hoje na ARP" (Lojas / Gastronomia / Serviços). */
 const homeStoresQuery = (kind: StoreKind) => ({ kind, pageSize: 4 }) as const;
 
 /** As 4 lojas de "Hoje na ARP" (mesma chave da lista de lojas com esse filtro). */
@@ -27,7 +27,8 @@ export function useHomeStores(kind: StoreKind) {
 export function refreshHome(qc: QueryClient): Promise<unknown> {
   return Promise.allSettled([
     qc.refetchQueries({ queryKey: queryKeys.home(), exact: true }),
-    qc.invalidateQueries({ queryKey: queryKeys.stores(homeStoresQuery("food")), exact: true }),
-    qc.invalidateQueries({ queryKey: queryKeys.stores(homeStoresQuery("shop")), exact: true }),
+    ...storeKindSchema.options.map((k) =>
+      qc.invalidateQueries({ queryKey: queryKeys.stores(homeStoresQuery(k)), exact: true }),
+    ),
   ]);
 }

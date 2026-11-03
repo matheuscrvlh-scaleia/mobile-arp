@@ -10,6 +10,7 @@ import {
   Text,
   useColors,
 } from "@/design";
+import { STORE_KIND_OPTIONS } from "@/features/stores";
 import { openPath } from "@/navigation/navigate";
 import { openParkingSheet, openTourSheet } from "./ShortcutSheets";
 
@@ -22,22 +23,21 @@ type Shortcut = {
   onPress: () => void;
 };
 
-/** Atalhos 4×2 da Início (.cats). `couponCount`: cupons no ar (badge; sem a home, sem badge). */
+/**
+ * Atalhos da Início (.cats), em linhas de 4 (Fase 2): as 3 categorias e
+ * Eventos; Cupons, Mapa, Estacionamento e Clube ARP; e os de conteúdo.
+ * `couponCount`: cupons no ar (badge; sem a home, sem badge).
+ */
 export function ShortcutGrid({ couponCount }: { couponCount: number | undefined }) {
   const styles = useStyles();
   const go = (href: string) => () => openPath(href);
 
   const items: Shortcut[] = [
-    {
-      icon: "utensils",
-      label: "Alimentação",
-      onPress: go("/lojas?tipo=food"),
-    },
-    {
-      icon: "shopping-bag",
-      label: "Lojas",
-      onPress: go("/lojas?tipo=shop"),
-    },
+    ...STORE_KIND_OPTIONS.map((k) => ({
+      icon: k.icon,
+      label: k.label,
+      onPress: go(`/lojas?tipo=${k.value}`),
+    })),
     { icon: "calendar-days", label: "Eventos", onPress: go("/agenda") },
     {
       icon: "ticket-percent",
@@ -47,25 +47,33 @@ export function ShortcutGrid({ couponCount }: { couponCount: number | undefined 
       onPress: go("/cupons"),
     },
     { icon: "map", label: "Mapa", onPress: go("/mapa") },
-    { icon: "award", label: "Clube ARP", variant: "dark", onPress: go("/desafios") },
     { icon: "car", label: "Estacionamento", onPress: openParkingSheet },
+    { icon: "award", label: "Clube ARP", variant: "dark", onPress: go("/desafios") },
     { icon: "compass", label: "Tour", onPress: openTourSheet },
   ];
 
   return (
     <View style={styles.grid}>
-      <View style={styles.row}>
-        {items.slice(0, 4).map((it) => (
-          <ShortcutItem key={it.label} item={it} />
-        ))}
-      </View>
-      <View style={styles.row}>
-        {items.slice(4).map((it) => (
-          <ShortcutItem key={it.label} item={it} />
-        ))}
-      </View>
+      {rowsOf(items, 4).map((row) => (
+        <View key={row[0]?.label} style={styles.row}>
+          {row.map((it) => (
+            <ShortcutItem key={it.label} item={it} />
+          ))}
+          {/* linha incompleta: vagas vazias mantêm a largura dos itens */}
+          {Array.from({ length: 4 - row.length }, (_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: vagas sem identidade
+            <View key={i} style={styles.item} />
+          ))}
+        </View>
+      ))}
     </View>
   );
+}
+
+function rowsOf<T>(list: readonly T[], size: number): T[][] {
+  const rows: T[][] = [];
+  for (let i = 0; i < list.length; i += size) rows.push(list.slice(i, i + size));
+  return rows;
 }
 
 function ShortcutItem({ item }: { item: Shortcut }) {

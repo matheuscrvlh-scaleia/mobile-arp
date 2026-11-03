@@ -27,28 +27,25 @@ import { useStoreCategories, useStoresInfinite } from "../api/stores";
 import { StoreCard } from "../components/StoreCard";
 import { StoreGridCell } from "../components/StoreGridCell";
 import { StoreGridSkeleton } from "../components/StoreGridStates";
+import { parseStoreKind, STORE_KIND_OPTIONS } from "../lib/kinds";
 import { storeFilters } from "../lib/store-filters";
 
-const KIND_OPTIONS = [
-  { value: "food", label: "Alimentação", icon: "utensils" },
-  { value: "shop", label: "Lojas", icon: "shopping-bag" },
-] as const;
-
 const PLACEHOLDER: Record<StoreKind, string> = {
+  shop: "Moda, acessórios, utilidades…",
   food: "Restaurantes, cafés, bares…",
-  shop: "Lojas e serviços…",
+  service: "Saúde, beleza, escritórios…",
 };
 
 /** Busca da API: acima disso ela recusa (400). */
 const QUERY_MAX = 120;
 const DEBOUNCE_MS = 450;
 
-/** Explorar (/lojas?tipo=food|shop&categoria=<id>&q=<busca>). */
+/** Explorar (/lojas?tipo=shop|food|service&categoria=<id>&q=<busca>). */
 export default function StoresScreen() {
   const c = useColors();
   const styles = useStyles();
   const params = useLocalSearchParams<{ tipo?: string; categoria?: string; q?: string }>();
-  const [kind, setKind] = useState<StoreKind>(params.tipo === "shop" ? "shop" : "food");
+  const [kind, setKind] = useState<StoreKind>(parseStoreKind(params.tipo));
   const [categoryId, setCategoryId] = useState<string | null>(params.categoria ?? null);
   const [text, setText] = useState(params.q ?? "");
   const [openNow, setOpenNow] = useState(false);
@@ -95,7 +92,7 @@ export default function StoresScreen() {
         Explorar
       </Text>
       <View style={styles.segm}>
-        <Segmented options={KIND_OPTIONS} value={kind} onChange={changeKind} />
+        <Segmented options={STORE_KIND_OPTIONS} value={kind} onChange={changeKind} />
       </View>
       <View style={styles.pad}>
         <SearchField

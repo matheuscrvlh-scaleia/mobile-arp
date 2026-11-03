@@ -33,6 +33,8 @@ function toSummary(s: StoreSummary, isFavorite: boolean): StoreSummary {
     slug: s.slug,
     name: s.name,
     category: s.category,
+    extraCategories: s.extraCategories,
+    kinds: s.kinds,
     floor: s.floor,
     block: s.block,
     icon: s.icon,

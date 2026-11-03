@@ -131,7 +131,7 @@ function StoreDetailBody({
           </Text>
           <View style={styles.cat}>
             <Text variant="body" tone="textMuted">
-              {store.category.name}
+              {[store.category, ...store.extraCategories].map((c) => c.name).join(" · ")}
             </Text>
             <OpenDot open={status.open} label={status.label} />
           </View>
