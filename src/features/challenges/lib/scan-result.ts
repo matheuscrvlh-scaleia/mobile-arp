@@ -75,8 +75,8 @@ export function refusalCopy(kind: ScanRefusal): RefusalCopy {
         icon: "clock-alert",
         iconBg: "dangerSoft",
         iconColor: "dangerText",
-        title: "Este QR Code expirou",
-        text: "Ele é de um desafio que já terminou. O QR Code só vale enquanto o desafio está ativo.",
+        title: "Este QR Code venceu",
+        text: "Todo QR Code da ARP tem prazo, e foto ou print de um código vencido não vale. Leia o código que está valendo agora.",
       };
     case "duplicate":
       return {
@@ -84,7 +84,7 @@ export function refusalCopy(kind: ScanRefusal): RefusalCopy {
         iconBg: "surface",
         iconColor: "text",
         title: "Você já ganhou este selo",
-        text: "Cada QR Code dá o selo uma vez só por pessoa. Que tal partir para o próximo desafio?",
+        text: "Este selo é de uso único: cada pessoa ganha uma vez. Que tal partir para o próximo desafio?",
       };
     case "allDone":
       return {
