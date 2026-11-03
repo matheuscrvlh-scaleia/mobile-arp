@@ -23,7 +23,15 @@ export function ChallengeRow({ challenge, done, onPress }: ChallengeRowProps) {
   const colors = useColors();
   const styles = useStyles();
   const qr = challenge.validation === "qr";
-  const a11y = `${challenge.title}. ${challenge.howTo}. ${
+  // Fase 2: pontos, uso único ou repetível e o produto do parceiro.
+  const meta = [
+    `+${challenge.points} ${challenge.points === 1 ? "ponto" : "pontos"}`,
+    challenge.repeatable ? "Repetível" : "Uso único",
+    challenge.product ? `Parceiro: ${challenge.product}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const a11y = `${challenge.title}. ${challenge.howTo}. ${meta}. ${
     done ? "Selo conquistado" : `Selo ${challenge.seal.name}, ${qr ? "ler QR Code" : "automático"}`
   }`;
   return (
@@ -42,6 +50,9 @@ export function ChallengeRow({ challenge, done, onPress }: ChallengeRowProps) {
         </Text>
         <Text style={styles.how} tone="textMuted" numberOfLines={2}>
           {challenge.howTo}
+        </Text>
+        <Text style={styles.meta} tone="brandText" weight={700} numberOfLines={1}>
+          {meta}
         </Text>
       </View>
       <View style={styles.st}>
@@ -86,6 +97,7 @@ const useStyles = createStyles((t) => ({
   text: { flex: 1, minWidth: 0 },
   title: { fontSize: 15, lineHeight: 19, letterSpacing: tracking(15, -0.01) },
   how: { fontSize: 12.5, lineHeight: 17, marginTop: 3 },
+  meta: { fontSize: 12, lineHeight: 16, marginTop: 4 },
   st: { flexShrink: 0, maxWidth: 130 },
   pill: { maxWidth: 130 },
   ok: {

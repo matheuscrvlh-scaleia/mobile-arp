@@ -1,36 +1,30 @@
+import { Image } from "expo-image";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { ScrollView, Share, View } from "react-native";
-import Animated, { FadeInUp, ZoomIn } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { ChallengeItem, ScanResult } from "@/contracts/app/challenges";
+import type { ScanResult } from "@/contracts/app/challenges";
 import {
   Button,
   createStyles,
   easings,
   fontFamily,
-  Icon,
   IconButton,
-  RadialGlow,
   Text,
   tracking,
-  useColors,
   withAlpha,
 } from "@/design";
-import { useChallenges } from "../api/challenges";
+import { formatPoints } from "@/features/club";
 import { BigBadge } from "../components/BigBadge";
 import { Confetti } from "../components/Confetti";
-import { SealRays } from "../components/SealRays";
 import { lastSeal, useLastSeal } from "../lib/last-seal";
-import { campaignShortName, justReachedTier, lowerFirst, missingSealsLabel } from "../lib/progress";
 import { goToChallenges } from "../sheets/refusal-sheet";
 
-/*
- * radial-gradient(circle at 50% 32%, #2f7d3d 0, #143a1c 42%, #0a170d 75%): dois brilhos
- * nativos (brand700 por cima de brand900) sobre o fundo `chrome` (escuro nos dois temas). Os raios estão em fração do
- * maior lado (num celular ~390×844, 42%/75% da distância ao canto ≈ 30%/54% da altura).
- */
-const BG_CENTER = { x: 0.5, y: 0.32 };
+/** Off-white da celebração (igual nos dois temas, como o confete). */
+const OFF_WHITE = "#f7f4ec";
+const INK = "#131813";
+const LOGO = require("../../../../assets/images/logo.png");
 
 const rise = (delay: number) => FadeInUp.delay(delay).duration(600).easing(easings.ease);
 
@@ -49,27 +43,23 @@ export default function SealWonScreen() {
   return <SealWon result={result} />;
 }
 
+/** Fase 2: fundo claro, selo no círculo verde, trevos caindo e os pontos do Clube. */
 function SealWon({ result }: { result: ScanResult }) {
-  const colors = useColors();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
-  const { data } = useChallenges();
-  const { seal, challenge, campaign, progress } = result;
-  const reached = justReachedTier(progress);
-  const next = progress.nextTier;
+  const { seal, challenge, points, totalPoints } = result;
   const title = challenge.title.trim().replace(/[.!]+$/, "");
 
   const share = () => {
-    void Share.share({ message: `Ganhei o selo ${seal.name} na ARP!` }).catch(() => undefined);
+    void Share.share({
+      message: `Ganhei o selo ${seal.name} (+${formatPoints(points)}) no Clube ARP!`,
+    }).catch(() => undefined);
   };
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="light" animated />
-      <RadialGlow color={colors.brand900} center={BG_CENTER} radius={0.54} />
-      <RadialGlow color={colors.brand700} center={BG_CENTER} radius={0.3} />
-      <SealRays top={insets.top + 70} />
-      <Confetti />
+      <StatusBar style="dark" animated />
+      <Confetti shape="trevo" />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[
@@ -80,108 +70,78 @@ function SealWon({ result }: { result: ScanResult }) {
         bounces={false}
       >
         <View style={styles.head}>
+          <Image source={LOGO} style={styles.logo} contentFit="contain" accessibilityLabel="ARP" />
           <IconButton
             icon="x"
-            variant="glass"
+            variant="white"
             accessibilityLabel="Fechar"
             onPress={goToChallenges}
           />
         </View>
 
-        <BigBadge seal={seal} />
+        <View style={styles.circle}>
+          <BigBadge seal={seal} />
+        </View>
 
         <Animated.View entering={rise(400)}>
-          <Text style={styles.k} color={colors.brand} align="center">
+          <Text style={styles.k} color={styles.brandText.color} align="center">
             Selo conquistado
           </Text>
         </Animated.View>
         <Animated.View entering={rise(500)}>
-          <Text style={styles.h1} tone="onChrome" align="center" accessibilityRole="header">
+          <Text style={styles.h1} color={INK} align="center" accessibilityRole="header">
             {seal.name}
           </Text>
         </Animated.View>
         <Animated.View entering={rise(600)}>
-          <Text style={styles.p} color={withAlpha(colors.onChrome, 0.65)} align="center">
-            {title}. O selo já está na sua coleção de {campaignShortName(campaign.name)}.
+          <Text style={styles.p} color={withAlpha(INK, 0.65)} align="center">
+            {title}.
           </Text>
         </Animated.View>
 
-        {data?.challenges.length ? (
-          <Animated.View entering={rise(700)} style={styles.prog}>
-            {data.challenges.map((c) => (
-              <ProgressDot key={c.id} item={c} isNew={c.id === challenge.id} />
-            ))}
-          </Animated.View>
-        ) : null}
+        <Animated.View entering={rise(750)} style={styles.points}>
+          <Text style={styles.plus} color={INK} align="center">
+            +{formatPoints(points)}
+          </Text>
+          <Text variant="body" color={withAlpha(INK, 0.7)} align="center">
+            Você tem {formatPoints(totalPoints)} no Clube ARP
+          </Text>
+        </Animated.View>
 
-        {reached ? (
-          <Animated.View entering={rise(900)} style={styles.unlock}>
-            <View style={styles.uIc}>
-              <Icon name="gift" color={colors.onBrand} />
-            </View>
-            <View style={styles.unlockText}>
-              <Text variant="bodyStrong" weight={700} tone="onChrome" style={styles.ub}>
-                Benefício desbloqueado!
-              </Text>
-              <Text variant="small" tone="onChrome">
-                {reached.label}
-              </Text>
-            </View>
-          </Animated.View>
-        ) : next ? (
-          <Animated.View entering={rise(900)} style={styles.unlock}>
-            <View style={[styles.uIc, styles.uIcSoft]}>
-              <Icon name={next.icon} color={colors.onChrome} />
-            </View>
-            <View style={styles.unlockText}>
-              <Text variant="bodyStrong" weight={700} tone="onChrome" style={styles.ub}>
-                {missingSealsLabel(Math.max(1, next.missing))}
-              </Text>
-              <Text variant="small" tone="onChrome">
-                para {lowerFirst(next.label)}
-              </Text>
-            </View>
-          </Animated.View>
-        ) : null}
-
-        <Animated.View entering={rise(1000)} style={styles.btns}>
-          <Button label="Continuar" variant="brand" onPress={goToChallenges} />
-          <Button label="Compartilhar" variant="lineLight" iconLeft="share-2" onPress={share} />
+        <Animated.View entering={rise(900)} style={styles.btns}>
+          <Button label="Compartilhar" variant="brand" iconLeft="share-2" onPress={share} />
+          <Button label="Continuar" variant="white" onPress={goToChallenges} />
         </Animated.View>
       </ScrollView>
     </View>
   );
 }
 
-function ProgressDot({ item, isNew }: { item: ChallengeItem; isNew: boolean }) {
-  const colors = useColors();
-  const styles = useStyles();
-  const ok = item.earned || isNew;
-  const dot = (
-    <View
-      style={[styles.dot, ok && styles.dotOk, isNew && styles.dotNew]}
-      accessible
-      accessibilityLabel={`Selo ${item.seal.name}${ok ? ", conquistado" : ", ainda não"}`}
-    >
-      <Icon
-        name={ok ? item.seal.icon : "lock"}
-        size={17}
-        color={ok ? colors.onBrand : colors.onChromeMuted}
-      />
-    </View>
-  );
-  if (!isNew) return dot;
-  // .w-prog i.new: popin com atraso de 1,2 s
-  return <Animated.View entering={ZoomIn.delay(1200).springify().damping(10)}>{dot}</Animated.View>;
-}
-
 const useStyles = createStyles((t) => ({
-  screen: { flex: 1, backgroundColor: t.colors.chrome, overflow: "hidden" },
+  screen: { flex: 1, backgroundColor: OFF_WHITE, overflow: "hidden" },
   scroll: { zIndex: 2 },
   content: { flexGrow: 1, alignItems: "center", paddingHorizontal: 24 },
-  head: { alignSelf: "stretch", flexDirection: "row", justifyContent: "flex-end" },
+  head: {
+    alignSelf: "stretch",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  /* logo.png é 425×200 */
+  logo: { width: 68, height: 32 },
+  circle: {
+    marginTop: 28,
+    width: 236,
+    height: 236,
+    borderRadius: 118,
+    backgroundColor: t.colors.brand,
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: `0 24px 40px -18px ${withAlpha(t.colors.brand700, 0.6)}`,
+  },
+  brandText: { color: t.colors.brand700 },
   k: {
-    marginTop: 34,
+    marginTop: 30,
     fontFamily: fontFamily(700),
     fontSize: 13,
     lineHeight: 16,
@@ -190,51 +150,21 @@ const useStyles = createStyles((t) => ({
   },
   h1: {
     fontFamily: fontFamily(850),
-    fontSize: 46,
-    lineHeight: 50,
-    letterSpacing: tracking(46, -0.05),
+    fontSize: 42,
+    lineHeight: 46,
+    letterSpacing: tracking(42, -0.05),
     marginTop: 6,
     marginBottom: 8,
   },
   p: { lineHeight: 22, maxWidth: 290 },
-  prog: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 26,
+  points: {
+    marginTop: 22,
+    paddingVertical: 14,
+    paddingHorizontal: 22,
+    borderRadius: 22,
+    backgroundColor: withAlpha(t.colors.brand, 0.14),
+    gap: 2,
   },
-  dot: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: withAlpha(t.colors.onChrome, 0.08),
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dotOk: { backgroundColor: t.colors.brand },
-  dotNew: { boxShadow: `0 0 0 4px ${withAlpha(t.colors.brand, 0.3)}` },
-  unlock: {
-    marginTop: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 12,
-    paddingLeft: 12,
-    paddingRight: 16,
-    borderRadius: 20,
-    backgroundColor: withAlpha(t.colors.onChrome, 0.08),
-  },
-  uIc: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: t.colors.brand,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  uIcSoft: { backgroundColor: withAlpha(t.colors.onChrome, 0.12) },
-  unlockText: { flexShrink: 1 },
-  ub: { fontSize: 14, lineHeight: 18 },
+  plus: { fontFamily: fontFamily(850), fontSize: 30, lineHeight: 34 },
   btns: { alignSelf: "stretch", marginTop: "auto", paddingTop: 26, gap: 10 },
 }));

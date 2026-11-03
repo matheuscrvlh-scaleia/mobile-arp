@@ -35,6 +35,8 @@ export const queryKeys = {
   couponsAll: () => ["public", "coupons"] as const,
   coupon: (id: string) => ["public", "coupons", "detail", id] as const,
   challenges: () => ["public", "challenges"] as const,
+  /** Clube ARP: personalizado (pontos), mas abre sem login. */
+  club: () => ["public", "club"] as const,
   /** Busca geral (não persiste; `q` já normalizado). */
   search: (kind: "stores" | "coupons", q: string) => ["public", "search", kind, q] as const,
 

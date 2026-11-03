@@ -33,7 +33,7 @@ import { ProfileHead } from "../components/ProfileHead";
 import { SavingsCard } from "../components/SavingsCard";
 import { StatRow } from "../components/StatRow";
 import { useNotificationSetting } from "../hooks/useNotificationSetting";
-import { memberSince, visitorLevel } from "../lib/profile";
+import { memberSince } from "../lib/profile";
 import { openAppearanceSheet, THEME_PREFERENCE_LABEL } from "../sheets/appearance-sheet";
 import { openAboutSheet, openSignOutSheet } from "../sheets/profile-sheets";
 
@@ -84,7 +84,7 @@ function SignedInProfile() {
 
   const visitor = me.data?.visitor ?? cachedVisitor;
   const summary = me.data?.summary;
-  const seals = summary?.sealsEarned ?? 0;
+  const points = summary?.clubPoints ?? 0;
   const activeClaims = summary?.activeClaims ?? 0;
   const favoriteCount = favorites.data?.length;
 
@@ -114,7 +114,7 @@ function SignedInProfile() {
           subtitle={`Na ARP desde ${memberSince(visitor.createdAt)}`}
           avatarUrl={mediaUrl(visitor.avatarUrl)}
           initials={initials(visitor.name)}
-          badge={summary ? `${visitorLevel(seals)} · ${plural(seals, "selo", "selos")}` : undefined}
+          badge={summary ? `${plural(points, "ponto", "pontos")} no Clube ARP` : undefined}
         />
       ) : (
         <View style={styles.headSkeleton}>
@@ -131,8 +131,8 @@ function SignedInProfile() {
             items={[
               {
                 icon: "award",
-                value: `${summary.sealsEarned}/${summary.sealsTotal}`,
-                label: "selos",
+                value: summary.clubPoints.toLocaleString("pt-BR"),
+                label: "pontos",
                 onPress: () => openPath("/desafios"),
               },
               {

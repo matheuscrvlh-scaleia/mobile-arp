@@ -59,6 +59,9 @@ const item = (id: string, validation: "qr" | "auto", earned = false) => ({
   event: null,
   earned,
   earnedAt: null,
+  points: 10,
+  repeatable: false,
+  product: null,
 });
 
 describe("barPercent", () => {
@@ -163,6 +166,8 @@ describe("applyScanResult", () => {
       campaign: { id: "c", name: "Desafios de novembro" },
       earnedAt: "2026-11-01T12:00:00.000Z",
       progress: progress(1),
+      points: 10,
+      totalPoints: 10,
     };
     const next = applyScanResult(data, result);
     expect(next.challenges[1]).toMatchObject({ earned: true, earnedAt: result.earnedAt });

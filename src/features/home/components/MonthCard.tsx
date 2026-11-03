@@ -1,7 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { View } from "react-native";
-import Svg, { Circle } from "react-native-svg";
 import type { MonthSummary } from "@/contracts/app/auth";
 import {
   createStyles,
@@ -32,7 +31,7 @@ export function MonthCard({ summary }: { summary: MonthSummary }) {
   const colors = useColors();
   const styles = useStyles();
   const now = useNow(60_000);
-  const { sealsEarned, sealsTotal, activeClaims, savingsMonthCents } = summary;
+  const { clubPoints, activeClaims, savingsMonthCents } = summary;
   const daysLeft = daysLeftInMonth(now);
   const month = monthName(now);
 
@@ -40,7 +39,7 @@ export function MonthCard({ summary }: { summary: MonthSummary }) {
     <PressableScale
       scaleTo={motion.pressScale.card}
       onPress={() => openPath("/desafios")}
-      accessibilityLabel={`Seu ${month} na ARP: ${sealsEarned} de ${sealsTotal} selos. Ver desafios`}
+      accessibilityLabel={`Seu ${month} na ARP: ${clubPoints} pontos no Clube ARP. Ver o Clube`}
       style={styles.card}
     >
       <Trevo size={190} color={colors.onBrand} opacity={0.1} style={styles.watermark} />
@@ -49,12 +48,16 @@ export function MonthCard({ summary }: { summary: MonthSummary }) {
           <Label icon="sparkles">{`Seu ${month} na ARP`}</Label>
           <View style={styles.bigRow}>
             <Text style={styles.big} tabular>
-              {sealsEarned}
+              {clubPoints.toLocaleString("pt-BR")}
             </Text>
-            <Text style={styles.bigSmall}>{`/ ${sealsTotal} selos`}</Text>
+            <Text style={styles.bigSmall}>
+              {clubPoints === 1 ? "ponto no Clube" : "pontos no Clube"}
+            </Text>
           </View>
         </View>
-        <Ring ratio={sealsTotal > 0 ? sealsEarned / sealsTotal : 0} />
+        <View style={styles.ring}>
+          <Trevo size={34} color={colors.onBrand} />
+        </View>
       </View>
       <DashedDivider color={withAlpha(colors.onBrand, 0.2)} spacing={0} style={styles.dashed} />
       <View style={styles.stats}>
@@ -145,43 +148,7 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-const RING = { size: 58, r: 25, stroke: 5 };
-const RING_LEN = 2 * Math.PI * RING.r;
-
-/** .ring: anel de progresso dos selos. */
-function Ring({ ratio }: { ratio: number }) {
-  const colors = useColors();
-  const styles = useStyles();
-  const c = RING.size / 2;
-  const filled = RING_LEN * Math.min(Math.max(ratio, 0), 1);
-  return (
-    <View style={styles.ring}>
-      <Svg width={RING.size} height={RING.size} style={styles.ringSvg}>
-        <Circle
-          cx={c}
-          cy={c}
-          r={RING.r}
-          fill="none"
-          stroke={withAlpha(colors.brand, 0.14)}
-          strokeWidth={RING.stroke}
-        />
-        {filled > 0 ? (
-          <Circle
-            cx={c}
-            cy={c}
-            r={RING.r}
-            fill="none"
-            stroke={colors.onBrand}
-            strokeWidth={RING.stroke}
-            strokeLinecap="round"
-            strokeDasharray={`${filled} ${RING_LEN}`}
-          />
-        ) : null}
-      </Svg>
-      <Icon name="award" size={22} color={colors.onBrand} />
-    </View>
-  );
-}
+const RING = { size: 58 };
 
 const useStyles = createStyles((t) => ({
   card: {
@@ -222,7 +189,6 @@ const useStyles = createStyles((t) => ({
     alignItems: "center",
     justifyContent: "center",
   },
-  ringSvg: { position: "absolute", transform: [{ rotate: "-90deg" }] },
   dashed: { marginTop: 18, marginBottom: 14 },
   stats: { flexDirection: "row", gap: 8 },
   stat: { flex: 1 },
