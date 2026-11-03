@@ -56,6 +56,8 @@ export const queryKeys = {
     overview: (storeId: string | null, period: MerchantPeriod) =>
       ["merchant", "overview", storeId, period] as const,
     overviewAll: () => ["merchant", "overview"] as const,
+    coupons: (storeId: string) => ["merchant", "coupons", storeId] as const,
+    jobs: (storeId: string) => ["merchant", "jobs", storeId] as const,
   },
 } as const;
 

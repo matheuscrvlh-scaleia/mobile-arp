@@ -11,6 +11,7 @@ import { haptic } from "@/shared/lib/haptics";
 import { QueryFallback } from "@/shared/query/QueryFallback";
 import { queryView } from "@/shared/query/query-view";
 import { useMerchantOverview } from "../api/merchant";
+import { ClubPanel } from "../components/ClubPanel";
 import { HourChart } from "../components/HourChart";
 import { LastUses } from "../components/LastUses";
 import { CouponCarousel, NoCouponHero } from "../components/LiveHero";
@@ -146,6 +147,7 @@ function Dashboard({ store, user, onSwitchStore }: DashboardProps) {
               {/* remonta quando chega o período novo: as barras crescem de novo */}
               <HourChart key={data.period} rows={data.redemptionsByHour} period={data.period} />
               <ValidatePanel />
+              <ClubPanel club={data.club} />
               <LastUses items={data.lastRedemptions} period={data.period} />
             </>
           ) : view !== "ready" ? (

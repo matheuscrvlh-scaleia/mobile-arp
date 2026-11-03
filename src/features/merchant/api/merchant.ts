@@ -59,6 +59,24 @@ export function useRedeemClaim() {
   });
 }
 
+/** Cupons da loja (rota do painel): "Aguardando ARP" até a aprovação. */
+export function useMerchantCoupons(storeId: string) {
+  return useQuery({
+    queryKey: queryKeys.merchant.coupons(storeId),
+    queryFn: ({ signal }) => merchantApi.coupons.list(storeId, { signal }),
+    select: (r) => r.data,
+  });
+}
+
+/** Vagas no ar da loja (rota do painel). */
+export function useMerchantJobs(storeId: string) {
+  return useQuery({
+    queryKey: queryKeys.merchant.jobs(storeId),
+    queryFn: ({ signal }) => merchantApi.jobs.list(storeId, { signal }),
+    select: (r) => r.data,
+  });
+}
+
 /** POST /merchant/auth/login. A tela grava a sessão (merchantSession.signIn). */
 export function useMerchantLogin() {
   return useMutation({

@@ -6,3 +6,4 @@ export {
   MiniCouponCard,
   type MiniCouponCardProps,
 } from "./components/MiniCouponCard";
+export { QrCode } from "./components/QrCode";
