@@ -15,12 +15,15 @@ function isPreference(value: unknown): value is ThemePreference {
   return value === "system" || value === "light" || value === "dark";
 }
 
+/** Sem escolha guardada o app abre claro; o visitante troca em Perfil > Aparência. */
+const DEFAULT_PREFERENCE: ThemePreference = "light";
+
 function readStored(): ThemePreference {
   try {
     const value = kv.getSync(THEME_PREFERENCE_KEY);
-    return isPreference(value) ? value : "system";
+    return isPreference(value) ? value : DEFAULT_PREFERENCE;
   } catch {
-    return "system";
+    return DEFAULT_PREFERENCE;
   }
 }
 
@@ -30,7 +33,7 @@ function applyNative(preference: ThemePreference): void {
 }
 
 const initial = readStored();
-// "system" já é o estado do nativo na abertura; só força quando o visitante escolheu.
+// "system" já é o estado do nativo na abertura; claro/escuro (inclusive o padrão) é forçado.
 if (initial !== "system") applyNative(initial);
 
 export const themePreferenceStore = createStore<{ preference: ThemePreference }>(() => ({

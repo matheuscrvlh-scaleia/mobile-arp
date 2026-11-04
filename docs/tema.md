@@ -1,6 +1,6 @@
 # Tema (claro e escuro)
 
-O app segue o tema do aparelho, ou o que o visitante escolher (Sistema / Claro / Escuro).
+O app abre no tema claro. O visitante pode trocar em Perfil > Aparência (Automático / Claro / Escuro).
 Toda cor vem de uma **paleta semântica** (`src/design/theme/palettes.ts`): o nome diz o
 *papel* da cor (`text`, `surface`, `inverse`…), não o valor (`ink`, `white`, `card`).
 
