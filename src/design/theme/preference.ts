@@ -1,7 +1,7 @@
 /* Preferência de tema do visitante: "system" | "light" | "dark". Lida de forma síncrona na
    abertura (o primeiro quadro já sai no tema certo, sem piscar) e aplicada também no nativo
    (Appearance.setColorScheme) para teclado, alertas, seletores e a status bar acompanharem. */
-import { Appearance } from "react-native";
+import { Appearance, Platform } from "react-native";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 import { kv } from "@/core/storage/kv";
@@ -28,6 +28,8 @@ function readStored(): ThemePreference {
 }
 
 function applyNative(preference: ThemePreference): void {
+  // react-native-web não tem setColorScheme: lá o tema do app já vem só do store.
+  if (Platform.OS === "web") return;
   // RN 0.88: "unspecified" (ou "auto") remove a força e volta a seguir o sistema.
   Appearance.setColorScheme(preference === "system" ? "unspecified" : preference);
 }

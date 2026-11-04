@@ -1,6 +1,6 @@
-import * as SecureStore from "expo-secure-store";
 import { ApiError, isApiError } from "@/core/api/errors";
 import type { AuthBridge } from "@/core/api/http";
+import * as SecureStore from "./secure-store";
 
 /*
  * Guarda e renova os tokens de UMA sessão (visitante ou lojista):

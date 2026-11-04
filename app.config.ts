@@ -22,9 +22,18 @@ const NAME: Record<Variant, string> = {
   production: "ARP",
 };
 
+/**
+ * Build web (react-native-web) servido num subcaminho, ex.: EXPO_WEB_BASE=/real
+ * (ver scripts/export-web.mjs). Sem a variável o config fica igual ao dos
+ * builds nativos.
+ */
+const WEB_BASE = process.env.EXPO_WEB_BASE?.trim().replace(/\/+$/, "") || null;
+
 function checkApiUrl(): void {
   const url = process.env.EXPO_PUBLIC_API_URL?.trim();
   if (!url) throw new Error("EXPO_PUBLIC_API_URL não definida (veja .env.example e eas.json).");
+  // No web a API pode ser relativa ("/arp-api"): o host faz o proxy na mesma origem.
+  if (WEB_BASE && url.startsWith("/")) return;
   if (VARIANT !== "development" && !url.startsWith("https://")) {
     throw new Error(`EXPO_PUBLIC_API_URL precisa ser https em ${VARIANT}: ${url}`);
   }
@@ -55,11 +64,19 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const google = googleSignInPlugin();
   return {
     ...config,
-    name: NAME[VARIANT],
+    // No web o título da aba é o nome do app, sem o "(dev)" da variante.
+    name: WEB_BASE ? NAME.production : NAME[VARIANT],
     slug: config.slug ?? "arp-visitante",
     plugins: [...(config.plugins ?? []), ...(google ? [google] : [])],
     ios: { ...config.ios, bundleIdentifier: id },
     android: { ...config.android, package: id },
+    // Só no export web: SPA (o host reescreve /real/* para /real/index.html) sob o subcaminho.
+    ...(WEB_BASE
+      ? {
+          web: { ...config.web, output: "single" as const },
+          experiments: { ...config.experiments, baseUrl: WEB_BASE },
+        }
+      : {}),
     extra: {
       ...config.extra,
       variant: VARIANT,
