@@ -1,4 +1,5 @@
 import { type Href, router } from "expo-router";
+import { Platform } from "react-native";
 
 /*
  * Navegação a partir de qualquer lugar (telas, sheets, notificações).
@@ -16,15 +17,21 @@ function pathnameOf(href: string): string {
 
 export const isTabPath = (href: string): boolean => TAB_PATHS.has(pathnameOf(href));
 
+/** Vai para uma aba. No web o dismissTo não navega quando não há tela empilhada: lá usa navigate. */
+function toTab(href: string): void {
+  if (Platform.OS === "web") router.navigate(href as Href);
+  else router.dismissTo(href as Href);
+}
+
 /** Abre um caminho do app: aba → volta às abas; tela → empilha. */
 export function openPath(href: string): void {
-  if (isTabPath(href)) router.dismissTo(href as Href);
+  if (isTabPath(href)) toTab(href);
   else router.push(href as Href);
 }
 
 /** Voltar, ou ir para `fallback` quando a tela foi aberta direto (link, push). */
 export function goBackOr(fallback = "/"): void {
   if (router.canGoBack()) router.back();
-  else if (isTabPath(fallback)) router.dismissTo(fallback as Href);
+  else if (isTabPath(fallback)) toTab(fallback);
   else router.replace(fallback as Href);
 }
