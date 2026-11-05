@@ -111,6 +111,18 @@ export const ROUTES = {
   },
   prizeRedemptions: {
     list: r("GET", "/prize-redemptions", "club.manage", "Trocas da lojinha (paginado)"),
+    visitors: r(
+      "GET",
+      "/prize-redemptions/visitors",
+      "club.manage",
+      "Buscar visitante com saldo de pontos (troca no balcão)",
+    ),
+    create: r(
+      "POST",
+      "/prize-redemptions",
+      "club.manage",
+      "Trocar pontos por prêmio no balcão (já entregue)",
+    ),
     deliver: r(
       "POST",
       "/prize-redemptions/:id/deliver",
@@ -187,8 +199,14 @@ export const ROUTES = {
     occurrences: r("GET", "/events/occurrences", "events.view", "Calendário (?from&to)"),
     get: r("GET", "/events/:id", "events.view", "Evento"),
     create: r("POST", "/events", "events.manage", "Criar evento"),
-    update: r("PATCH", "/events/:id", "events.manage", "Editar / publicar / cancelar evento"),
+    update: r(
+      "PATCH",
+      "/events/:id",
+      "events.manage",
+      "Editar / publicar / pausar / cancelar evento",
+    ),
     remove: r("DELETE", "/events/:id", "events.manage", "Apagar rascunho"),
+    importSite: r("POST", "/events/import-site", "events.manage", "Importar eventos do site"),
   },
 
   highlights: {
@@ -229,6 +247,7 @@ export const ROUTES = {
   jobs: {
     list: r("GET", "/jobs", "jobs.view", "Vagas (?storeId&status)"),
     create: r("POST", "/jobs", "jobs.manage", "Publicar vaga"),
+    update: r("PATCH", "/jobs/:id", "jobs.manage", "Editar vaga"),
     remove: r("DELETE", "/jobs/:id", "jobs.manage", "Tirar vaga do ar"),
   },
 
@@ -239,6 +258,12 @@ export const ROUTES = {
   },
 
   dashboard: r("GET", "/dashboard/overview", "dashboard.view", "Indicadores do período"),
+  dashboardDetail: r(
+    "GET",
+    "/dashboard/detail",
+    "dashboard.view",
+    "De onde vem um indicador (?metric&period&storeId)",
+  ),
   auditLogs: r("GET", "/audit-logs", "audit.view", "Histórico de alterações"),
   settings: {
     get: r("GET", "/settings", "settings.manage", "Configurações do app"),

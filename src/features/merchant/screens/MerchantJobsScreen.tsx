@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
+import { JOB_DEFAULT_DAYS } from "@/contracts/content";
 import { errorMessage } from "@/core/api/errors";
 import { merchantApi } from "@/core/merchant/merchant-api";
 import { useMerchantSession } from "@/core/merchant/merchant-session";
@@ -20,7 +21,7 @@ import { useMerchantJobs } from "../api/merchant";
 
 const DAY_MS = 86_400_000;
 
-/** /lojista/vagas: publicar e tirar vagas do ar. Saem sozinhas no prazo da ARP (30 dias). */
+/** /lojista/vagas: publicar e tirar vagas do ar. Saem sozinhas no prazo padrão da ARP (JOB_DEFAULT_DAYS). */
 export default function MerchantJobsScreen() {
   const styles = useStyles();
   const qc = useQueryClient();
@@ -41,6 +42,7 @@ export default function MerchantJobsScreen() {
         text: text.trim(),
         imageUrl: null,
         whatsapp,
+        days: JOB_DEFAULT_DAYS,
       });
       setTitle("");
       setText("");
