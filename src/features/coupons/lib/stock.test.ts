@@ -43,6 +43,7 @@ function coupon(id: string, total: number, remaining: number): CouponCard {
     startsAt: "2026-11-01T03:00:00.000Z",
     endsAt: null,
     redeemWindowHours: 24,
+    useUntil: null,
     tone: "green",
     icon: "beer",
     imageUrl: null,

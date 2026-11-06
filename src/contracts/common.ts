@@ -62,6 +62,12 @@ export function patchOf<T extends z.ZodRawShape>(shape: T): PatchShape<T> {
 
 /** Referência curta a outra entidade (id + nome), usada nas respostas. */
 export const refSchema = z.object({ id: idSchema, name: z.string() });
+
+/**
+ * true = dado fictício de demonstração (is_demo, gravado direto no banco): o
+ * painel mostra um ícone. Ausente ou false = dado real.
+ */
+export const demoFlagSchema = z.boolean().optional();
 export type Ref = z.infer<typeof refSchema>;
 
 /* Paginação -------------------------------------------------------------- */

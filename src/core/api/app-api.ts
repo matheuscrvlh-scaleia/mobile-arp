@@ -208,16 +208,10 @@ export const appApi = {
       }),
   },
 
-  /** Clube ARP (Fase 2). Recusas da troca: NOT_ENOUGH_POINTS (422), PRIZE_OUT_OF_STOCK (409). */
+  /** Clube ARP (Fase 2). Só mostra a lojinha: a troca é feita no Centro de Informações. */
   club: {
     get: ({ signal }: Signal = {}) =>
       request<App.Club>({ route: R.club.get, schema: S?.clubSchema, signal }),
-    redeem: (prizeId: string) =>
-      request<App.PrizeRedeemResult>({
-        route: R.club.redeem,
-        params: { id: prizeId },
-        schema: S?.prizeRedeemResultSchema,
-      }),
     joinRanking: (body: App.JoinRankingBody) => request({ route: R.club.joinRanking, body }),
     leaveRanking: () => request({ route: R.club.leaveRanking }),
   },

@@ -1,10 +1,9 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
-import type { ClubPrize } from "@/contracts/app/club";
 import { joinRankingBodySchema } from "@/contracts/app/club";
 import { appApi } from "@/core/api/app-api";
-import { errorMessage, isApiError } from "@/core/api/errors";
+import { errorMessage } from "@/core/api/errors";
 import { queryKeys } from "@/core/query/keys";
 import { queryClient } from "@/core/query/query-client";
 import {
@@ -20,42 +19,11 @@ import {
 } from "@/design";
 import { CheckRow } from "@/features/auth";
 import { AuthField } from "@/shared/form/AuthField";
-import { formatPoints } from "../lib/club";
 
 function refreshClub() {
   void queryClient.invalidateQueries({ queryKey: queryKeys.club() });
   void queryClient.invalidateQueries({ queryKey: queryKeys.home(), refetchType: "none" });
   void queryClient.invalidateQueries({ queryKey: queryKeys.me.profile() });
-}
-
-/** Confirma a troca e mostra o código de retirada. */
-export function openRedeemSheet(prize: ClubPrize): void {
-  sheet.message({
-    icon: "gift",
-    title: `Trocar por ${prize.name}?`,
-    text: `Saem ${formatPoints(prize.points)} do seu total. Você retira no Centro de Informações com o código.`,
-    actions: [
-      { label: "Trocar", variant: "brand", onPress: () => void redeem(prize) },
-      { label: "Agora não" },
-    ],
-  });
-}
-
-async function redeem(prize: ClubPrize): Promise<void> {
-  try {
-    const result = await appApi.club.redeem(prize.id);
-    refreshClub();
-    sheet.message({
-      icon: "circle-check",
-      title: `Código ${result.code}`,
-      text: `Mostre este código no Centro de Informações para retirar ${result.prize.name}. Você ainda tem ${formatPoints(result.totalPoints)}.`,
-      actions: [{ label: "Entendi" }],
-      dismissible: false,
-    });
-  } catch (e) {
-    if (isApiError(e)) refreshClub();
-    toast.show(errorMessage(e), "circle-alert");
-  }
 }
 
 /** Entrar no ranking: apelido (o nome real nunca aparece) e aceite. */

@@ -3,7 +3,7 @@ import { appApi } from "@/core/api/app-api";
 import { queryKeys } from "@/core/query/keys";
 import { MINUTE_MS } from "@/shared/lib/time";
 
-/** GET /club: pontos, selos, lojinha e ranking (abre sem login). Trocas e ranking: club-sheets. */
+/** GET /club: pontos, selos, lojinha e ranking (abre sem login). Ranking: club-sheets. */
 export function useClub() {
   return useQuery({
     queryKey: queryKeys.club(),

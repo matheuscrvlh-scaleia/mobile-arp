@@ -5,11 +5,7 @@ import { PRIZE_KIND_LABEL } from "@/contracts/gamification";
 import { Button, createStyles, Icon, layout, Pill, SealBadge, Text, useColors } from "@/design";
 import { requireAuth } from "@/features/auth";
 import { formatPoints, sealStateLabel } from "../lib/club";
-import {
-  openJoinRankingSheet,
-  openLeaveRankingSheet,
-  openRedeemSheet,
-} from "../sheets/club-sheets";
+import { openJoinRankingSheet, openLeaveRankingSheet } from "../sheets/club-sheets";
 
 const COLS = 3;
 const GAP = 10;
@@ -55,7 +51,10 @@ export function ClubSealGrid({ seals }: { seals: readonly ClubSeal[] }) {
   );
 }
 
-/** Lojinha: prêmios com "Trocar" ou "Faltam N". */
+/**
+ * Lojinha: só mostra os prêmios ("Dá para trocar" ou "Faltam N"). A troca é
+ * feita pela equipe no Centro de Informações, que confere o estoque na hora.
+ */
 export function PrizeList({
   prizes,
   total,
@@ -75,6 +74,13 @@ export function PrizeList({
   }
   return (
     <View style={styles.list}>
+      <View style={styles.how}>
+        <Icon name="info" size={18} color={colors.brandText} />
+        <Text variant="small" tone="textMuted" style={styles.howText}>
+          Para trocar, vá ao Centro de Informações e diga seu nome ou e-mail. A equipe confere seus
+          pontos e entrega o prêmio na hora.
+        </Text>
+      </View>
       {prizes.map((p) => {
         const missing = total === null ? p.points : Math.max(0, p.points - total);
         const can = total !== null && missing === 0;
@@ -99,20 +105,8 @@ export function PrizeList({
               </Text>
             </View>
             {can ? (
-              <Button label="Trocar" size="sm" variant="brand" onPress={() => openRedeemSheet(p)} />
-            ) : total === null ? (
-              <Button
-                label="Trocar"
-                size="sm"
-                variant="soft"
-                onPress={() =>
-                  requireAuth(() => undefined, {
-                    title: "Entre para trocar seus pontos",
-                    text: "Crie sua conta, cumpra desafios e troque os pontos por prêmios.",
-                  })
-                }
-              />
-            ) : (
+              <Pill label="Dá para trocar" variant="brand" />
+            ) : total === null ? null : (
               <Pill label={`Faltam ${missing}`} variant="default" />
             )}
           </View>
@@ -209,6 +203,8 @@ const useStyles = createStyles((t) => ({
     gap: 6,
   },
   empty: { marginHorizontal: layout.gutter },
+  how: { flexDirection: "row", gap: 8, alignItems: "flex-start", paddingHorizontal: 4 },
+  howText: { flex: 1 },
   list: { gap: 10, paddingHorizontal: layout.gutter },
   prize: {
     flexDirection: "row",

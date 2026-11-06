@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  demoFlagSchema,
   hexColorSchema,
   iconNameSchema,
   idSchema,
@@ -44,6 +45,9 @@ export const sealSchema = z.object({
   validityMonths: z.number().int(),
   /** Pode ser ganho de novo (ex.: evento). Padrão: uso único. */
   repeatable: z.boolean(),
+  /** Janela em que o selo pode ser ganho (null = sem limite). */
+  availableFrom: isoDateTimeSchema.nullable(),
+  availableUntil: isoDateTimeSchema.nullable(),
   earnedCount: z.number().int(),
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,
@@ -63,6 +67,8 @@ export const createSealBodySchema = z.object({
   points: z.number().int().min(1).max(1000).default(10),
   validityMonths: z.number().int().min(1).max(12).default(6),
   repeatable: z.boolean().default(false),
+  availableFrom: isoDateTimeSchema.nullable().optional(),
+  availableUntil: isoDateTimeSchema.nullable().optional(),
 });
 export type CreateSealBody = z.infer<typeof createSealBodySchema>;
 export const updateSealBodySchema = z.object(patchOf(createSealBodySchema.shape));
@@ -107,6 +113,7 @@ export const campaignSchema = z.object({
   /** Visitantes com ao menos um selo na campanha. */
   participantsCount: z.number().int(),
   sealsAwarded: z.number().int(),
+  isDemo: demoFlagSchema,
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,
 });
@@ -179,8 +186,12 @@ export const challengeSchema = z.object({
   event: z.object({ id: idSchema, title: z.string() }).nullable(),
   sortOrder: z.number().int(),
   status: challengeStatusSchema,
+  /** Janela própria dentro da campanha (null = início/fim da campanha). */
+  availableFrom: isoDateTimeSchema.nullable(),
+  availableUntil: isoDateTimeSchema.nullable(),
   completionsCount: z.number().int(),
   qrCodesCount: z.number().int(),
+  isDemo: demoFlagSchema,
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,
 });
@@ -204,6 +215,9 @@ export const createChallengeBodySchema = z.object({
   eventId: idSchema.nullable().optional(),
   sortOrder: z.number().int().min(0).max(999).default(0),
   status: challengeStatusSchema.default("active"),
+  /** Vazio: vale o início/fim da campanha. */
+  availableFrom: isoDateTimeSchema.nullable().optional(),
+  availableUntil: isoDateTimeSchema.nullable().optional(),
 });
 export type CreateChallengeBody = z.infer<typeof createChallengeBodySchema>;
 export const updateChallengeBodySchema = z.object(
@@ -305,6 +319,7 @@ export const earnedSealSchema = z.object({
   campaign: refSchema,
   visitor: refSchema,
   earnedAt: isoDateTimeSchema,
+  isDemo: demoFlagSchema,
 });
 export type EarnedSeal = z.infer<typeof earnedSealSchema>;
 export const earnedSealPageSchema = paginated(earnedSealSchema);
@@ -336,6 +351,7 @@ export const prizeSchema = z.object({
   visitorsEnough: z.number().int(),
   /** Visitantes com 80% ou mais dos pontos. */
   visitorsAlmost: z.number().int(),
+  isDemo: demoFlagSchema,
 });
 export type Prize = z.infer<typeof prizeSchema>;
 export const prizeListSchema = listOf(prizeSchema);
@@ -354,12 +370,16 @@ export type CreatePrizeBody = z.infer<typeof createPrizeBodySchema>;
 export const updatePrizeBodySchema = z.object(patchOf(createPrizeBodySchema.shape));
 export type UpdatePrizeBody = z.infer<typeof updatePrizeBodySchema>;
 
-export const prizeRedemptionStatusSchema = z.enum(["pending", "delivered", "cancelled"]);
+/**
+ * A troca só acontece no balcão (o app não pede): sai entregue na hora.
+ * Cancelada = o Centro de Informações desfez (pontos e estoque voltam).
+ */
+export const prizeRedemptionStatusSchema = z.enum(["delivered", "cancelled"]);
 export type PrizeRedemptionStatus = z.infer<typeof prizeRedemptionStatusSchema>;
 
 export const prizeRedemptionSchema = z.object({
   id: idSchema,
-  /** Código de retirada (Centro de Informações). */
+  /** Comprovante da troca (6 letras). */
   code: z.string(),
   prize: refSchema,
   visitor: refSchema,
@@ -367,12 +387,17 @@ export const prizeRedemptionSchema = z.object({
   status: prizeRedemptionStatusSchema,
   createdAt: isoDateTimeSchema,
   deliveredAt: isoDateTimeSchema.nullable(),
+  /** Quem fez a troca no balcão (null = usuário apagado). */
+  deliveredBy: refSchema.nullable(),
+  cancelledAt: isoDateTimeSchema.nullable(),
+  isDemo: demoFlagSchema,
 });
 export type PrizeRedemption = z.infer<typeof prizeRedemptionSchema>;
 export const prizeRedemptionPageSchema = paginated(prizeRedemptionSchema);
 export const listPrizeRedemptionsQuerySchema = paginationQuerySchema.extend({
   status: prizeRedemptionStatusSchema.optional(),
-  code: z.string().trim().max(20).optional(),
+  /** Comprovante ou nome do visitante. */
+  q: z.string().trim().max(120).optional(),
 });
 export type ListPrizeRedemptionsQuery = z.infer<typeof listPrizeRedemptionsQuerySchema>;
 
