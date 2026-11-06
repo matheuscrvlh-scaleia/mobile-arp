@@ -19,6 +19,7 @@ import {
   useTheme,
   withAlpha,
 } from "@/design";
+import { formatDayMonth } from "@/shared/lib/format";
 import { isSoldOut, isUrgent, stockRatio } from "../lib/stock";
 
 export type CouponCardProps = { coupon: CouponCardData };
@@ -117,7 +118,9 @@ export function CouponCard({ coupon }: CouponCardProps) {
             </View>
           )}
           <Text style={styles.hours} color={tone.fgMuted}>
-            {coupon.redeemWindowHours}h p/ usar
+            {coupon.useUntil
+              ? `até ${formatDayMonth(coupon.useUntil)}`
+              : `${coupon.redeemWindowHours}h p/ usar`}
           </Text>
         </View>
 

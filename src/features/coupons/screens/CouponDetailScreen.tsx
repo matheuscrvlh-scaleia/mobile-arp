@@ -25,6 +25,7 @@ import { requireAuth } from "@/features/auth";
 import { useStore, useToggleFollow } from "@/features/stores";
 import { openPath } from "@/navigation/navigate";
 import { useRefreshControl } from "@/shared/hooks/useRefreshControl";
+import { formatDayMonth } from "@/shared/lib/format";
 import { haptic } from "@/shared/lib/haptics";
 import { QueryFallback } from "@/shared/query/QueryFallback";
 import { queryView } from "@/shared/query/query-view";
@@ -105,7 +106,9 @@ function CouponDetailView({ coupon, placeholder, refreshControl, onRefresh }: Vi
   const [checking, setChecking] = useState(false);
   const soldOut = isSoldOut(coupon.stock);
   const { myClaim } = coupon;
-  const hours = coupon.redeemWindowHours;
+  const deadline = coupon.useUntil
+    ? `até ${formatDayMonth(coupon.useUntil)} para usar`
+    : `${coupon.redeemWindowHours}h para usar`;
   const following = store.data?.isFollowing ?? false;
 
   /** Sem resposta (timeout, rede, 5xx): o pego pode ter sido gravado. Confere antes de dizer que falhou. */
@@ -116,7 +119,7 @@ function CouponDetailView({ coupon, placeholder, refreshControl, onRefresh }: Vi
       .then((found) => {
         if (found) {
           haptic.success();
-          toast.show(`Cupom garantido! Você tem ${hours}h para usar`, "ticket-check", {
+          toast.show(`Cupom garantido! Você tem ${deadline}`, "ticket-check", {
             haptic: "none",
           });
           router.push(`/carteira/${found.id}`);
@@ -132,7 +135,7 @@ function CouponDetailView({ coupon, placeholder, refreshControl, onRefresh }: Vi
     claim.mutate(coupon.id, {
       onSuccess: (c) => {
         haptic.success();
-        toast.show(`Cupom garantido! Você tem ${hours}h para usar`, "ticket-check", {
+        toast.show(`Cupom garantido! Você tem ${deadline}`, "ticket-check", {
           haptic: "none",
         });
         router.push(`/carteira/${c.id}`);

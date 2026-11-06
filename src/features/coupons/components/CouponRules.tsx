@@ -9,8 +9,12 @@ function rulesFor(coupon: CouponCard): Rule[] {
   const rules: Rule[] = [
     {
       icon: "timer",
-      title: `${plural(coupon.redeemWindowHours, "hora", "horas")} para usar`,
-      text: "O prazo começa quando você pega o cupom",
+      title: coupon.useUntil
+        ? `Use até ${formatDayMonth(coupon.useUntil)} às ${formatTime(coupon.useUntil)}`
+        : `${plural(coupon.redeemWindowHours, "hora", "horas")} para usar`,
+      text: coupon.useUntil
+        ? "Vale até essa data, não importa quando você pega"
+        : "O prazo começa quando você pega o cupom",
     },
     {
       icon: "rotate-ccw",

@@ -90,6 +90,8 @@ export const couponSchema = z.object({
   redeemWindowHours: z.number().int(),
   /** Pego vence no fim da promoção (endsAt), mesmo antes das horas para usar. */
   expiresWithPromotion: z.boolean(),
+  /** Data fixa em que o pego vence, no lugar das horas para usar (null = horas). */
+  useUntil: isoDateTimeSchema.nullable().optional(),
   tone: couponToneSchema,
   icon: iconNameSchema,
   imageUrl: z.string().nullable(),
