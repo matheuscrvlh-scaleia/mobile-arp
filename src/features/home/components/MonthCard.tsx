@@ -91,14 +91,14 @@ export function GuestMonthCard() {
     <PressableScale
       scaleTo={motion.pressScale.card}
       onPress={() => router.push("/cadastro")}
-      accessibilityLabel="Ganhe selos e benefícios só por estar aqui. Criar conta grátis"
+      accessibilityLabel="Ganhe selos, junte Trevos e troque por prêmios. Criar conta grátis"
       style={styles.card}
     >
       <Trevo size={190} color={colors.onBrand} opacity={0.1} style={styles.watermark} />
-      <Label icon="sparkles">Viva a ARP</Label>
-      <Text style={styles.guestTitle}>Ganhe selos e benefícios só por estar aqui</Text>
+      <Label icon="sparkles">Clube ARP</Label>
+      <Text style={styles.guestTitle}>Ganhe selos, junte Trevos e troque por prêmios</Text>
       <Text style={styles.guestText}>
-        Faça o tour, vá a um evento, pegue cupons. Cada desafio vale um selo.
+        Faça o Circuito Cultural, vá a um evento, descarte no Sustentarp. Cada selo vale Trevos.
       </Text>
       <View style={styles.guestFoot}>
         <View style={styles.cta}>

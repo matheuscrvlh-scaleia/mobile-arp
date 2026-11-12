@@ -134,10 +134,10 @@ function SignedInProfile() {
           <StatRow
             items={[
               {
-                icon: "award",
+                icon: "clover",
                 value: summary.clubPoints.toLocaleString("pt-BR"),
                 label: summary.clubPoints === 1 ? "trevo" : "trevos",
-                onPress: () => openPath("/desafios"),
+                onPress: () => router.push("/carteira/trevos"),
               },
               {
                 icon: "ticket-check",
@@ -177,12 +177,12 @@ function SignedInProfile() {
 
       <Menu>
         <MenuItem
-          icon="ticket-percent"
-          label="Meus cupons"
+          icon="wallet"
+          label="Minha carteira"
           onPress={() => router.push("/carteira")}
           right={
             activeClaims > 0 ? (
-              <Pill variant="dark" label={plural(activeClaims, "ativo", "ativos")} />
+              <Pill variant="dark" label={plural(activeClaims, "cupom", "cupons")} />
             ) : null
           }
         />

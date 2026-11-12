@@ -51,6 +51,7 @@ import ClapperboardIcon from "lucide-react-native/icons/clapperboard";
 import ClockIcon from "lucide-react-native/icons/clock";
 import ClockAlertIcon from "lucide-react-native/icons/clock-alert";
 import CloudOffIcon from "lucide-react-native/icons/cloud-off";
+import CloverIcon from "lucide-react-native/icons/clover";
 import CoffeeIcon from "lucide-react-native/icons/coffee";
 import CompassIcon from "lucide-react-native/icons/compass";
 import CookieIcon from "lucide-react-native/icons/cookie";
@@ -239,6 +240,7 @@ export const ICONS = {
   citrus: CitrusIcon,
   clapperboard: ClapperboardIcon,
   clock: ClockIcon,
+  clover: CloverIcon,
   "clock-alert": ClockAlertIcon,
   "cloud-off": CloudOffIcon,
   coffee: CoffeeIcon,
