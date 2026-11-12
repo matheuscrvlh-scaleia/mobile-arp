@@ -39,7 +39,7 @@ export function MonthCard({ summary }: { summary: MonthSummary }) {
     <PressableScale
       scaleTo={motion.pressScale.card}
       onPress={() => openPath("/desafios")}
-      accessibilityLabel={`Seu ${month} na ARP: ${clubPoints} pontos no Clube ARP. Ver o Clube`}
+      accessibilityLabel={`Seu ${month} na ARP: ${clubPoints} Trevos no Clube ARP. Ver o Clube`}
       style={styles.card}
     >
       <Trevo size={190} color={colors.onBrand} opacity={0.1} style={styles.watermark} />
@@ -51,7 +51,7 @@ export function MonthCard({ summary }: { summary: MonthSummary }) {
               {clubPoints.toLocaleString("pt-BR")}
             </Text>
             <Text style={styles.bigSmall}>
-              {clubPoints === 1 ? "ponto no Clube" : "pontos no Clube"}
+              {clubPoints === 1 ? "Trevo no Clube" : "Trevos no Clube"}
             </Text>
           </View>
         </View>

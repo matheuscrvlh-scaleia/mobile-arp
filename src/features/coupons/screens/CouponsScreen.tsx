@@ -17,6 +17,7 @@ import {
   useColors,
   useTopInset,
 } from "@/design";
+import { HomeBackButton, WalletButton } from "@/navigation/HeaderButtons";
 import { useRefreshControl } from "@/shared/hooks/useRefreshControl";
 import { QueryFallback } from "@/shared/query/QueryFallback";
 import { queryView } from "@/shared/query/query-view";
@@ -42,14 +43,11 @@ export default function CouponsScreen() {
     <View style={{ paddingTop }}>
       <View style={styles.pad}>
         <View style={styles.titleRow}>
-          <Text variant="title" accessibilityRole="header">
+          <HomeBackButton />
+          <Text variant="title" accessibilityRole="header" style={styles.title}>
             Cupons
           </Text>
-          <IconButton
-            icon="wallet"
-            accessibilityLabel="Minha carteira"
-            onPress={() => router.push("/carteira")}
-          />
+          <WalletButton />
         </View>
         <Text variant="muted" style={styles.lead}>
           Pegue, mostre no caixa e use dentro do prazo. Não usou? Ele volta pra vitrine.
@@ -139,7 +137,8 @@ export default function CouponsScreen() {
 
 const styles = StyleSheet.create({
   pad: { paddingHorizontal: layout.gutter },
-  titleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  title: { flex: 1 },
   lead: { marginTop: 8, lineHeight: 22 },
   chips: { marginTop: 18, marginBottom: 16, flexGrow: 0 },
   chipsContent: { gap: 8, paddingHorizontal: layout.gutter },

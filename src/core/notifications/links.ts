@@ -24,6 +24,9 @@ const STATIC = new Set([
   "favoritos",
   "busca",
   "conta",
+  "novidades",
+  "circuito",
+  "sustentarp",
 ]);
 
 /** id, slug ou token: nada que mude o caminho (barras, espaços, sinais de HTML). */

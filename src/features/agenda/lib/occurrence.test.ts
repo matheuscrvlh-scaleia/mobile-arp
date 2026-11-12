@@ -16,6 +16,7 @@ import {
   nextStart,
   occurrenceLabel,
   periodProgress,
+  periodsLabel,
   reminderAt,
   rowDateLabel,
   rowWhen,
@@ -23,6 +24,7 @@ import {
   shortRangeLabel,
   upcomingAfter,
   upcomingAgendaRange,
+  weekdaysLabel,
   weeklyLabel,
 } from "./occurrence";
 
@@ -40,6 +42,8 @@ const ev = (id: string, over: Partial<AgendaEvent> = {}): AgendaEvent => ({
   startsOn: TODAY,
   endsOn: null,
   weekday: null,
+  weekdays: null,
+  periods: null,
   startTime: "19:00",
   endTime: null,
   isLongRunning: false,
@@ -270,5 +274,36 @@ describe("monthRange", () => {
     expect(monthRange("2026-01-15", -1).from).toBe("2025-12-01");
     expect(monthRange("2026-12-15", 1).to).toBe("2027-01-31");
     expect(monthRange("2028-01-10", 1).days).toHaveLength(29);
+  });
+});
+
+describe("vários períodos e dias da semana", () => {
+  const oct = [
+    { startsOn: "2026-10-10", endsOn: "2026-10-12" },
+    { startsOn: "2026-10-17", endsOn: "2026-10-19" },
+  ];
+  it("lista os trechos do mesmo mês sem repetir o mês", () => {
+    expect(periodsLabel(oct)).toBe("10 a 12 e 17 a 19 de out");
+  });
+  it("trecho de um dia mostra só o dia", () => {
+    expect(
+      periodsLabel([
+        { startsOn: "2026-10-10", endsOn: "2026-10-10" },
+        { startsOn: "2026-10-17", endsOn: "2026-10-19" },
+      ]),
+    ).toBe("10 e 17 a 19 de out");
+  });
+  it("evento em dois trechos não aparece como um período só", () => {
+    const e = ev("p", {
+      recurrence: "range",
+      startsOn: "2026-10-10",
+      endsOn: "2026-10-19",
+      periods: oct,
+    });
+    expect(evWhen(e)).not.toContain("10 a 19");
+  });
+  it("dias da semana", () => {
+    expect(weekdaysLabel([6])).toBe(weeklyLabel(6));
+    expect(weekdaysLabel([0, 1, 2, 3, 4, 5, 6])).toBe("Todos os dias");
   });
 });

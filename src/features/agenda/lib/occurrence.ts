@@ -23,8 +23,9 @@ export type { AgendaEvent };
 /** Item da agenda ou `EventCard`/detalhe (estes trazem também `nextDate`). */
 export type EventRowData = AgendaEvent & { nextDate?: string | null };
 
-/** Período de um evento (o que o detalhe/EventCard trazem). */
-export type EventPeriod = Pick<EventCard, "recurrence" | "startsOn" | "endsOn" | "weekday">;
+/** Período de um evento (o que o detalhe/EventCard trazem). `weekdays`/`periods` vêm da API nova. */
+export type EventPeriod = Pick<EventCard, "recurrence" | "startsOn" | "endsOn" | "weekday"> &
+  Partial<Pick<EventCard, "weekdays" | "periods">>;
 
 /** Lembrete local: 2 h antes do início; sem horário, às 9h do dia. */
 export const REMINDER_LEAD_MS = 2 * HOUR_MS;
@@ -64,6 +65,68 @@ export function addDaysISO(iso: string, n: number): string {
 export function weeklyLabel(weekday: number): string {
   const name = (DIAS[weekday] ?? "").toLowerCase();
   return `${weekday === 0 || weekday === 6 ? "Todo" : "Toda"} ${name}`;
+}
+
+/** Ordem falada: segunda primeiro, domingo por último. */
+const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+/** "Toda terça e quinta", "Todo sábado e domingo", "Todos os dias" (7). */
+export function weekdaysLabel(days: readonly number[]): string {
+  const sorted = WEEK_ORDER.filter((d) => days.includes(d));
+  const [first] = sorted;
+  if (first === undefined) return "Toda semana";
+  if (sorted.length === 7) return "Todos os dias";
+  if (sorted.length === 1) return weeklyLabel(first);
+  const names = sorted.map((d) => (DIAS[d] ?? "").toLowerCase());
+  return `${first === 0 || first === 6 ? "Todo" : "Toda"} ${names.slice(0, -1).join(", ")} e ${names.at(-1)}`;
+}
+
+/** Semanal: todos os dias (`weekdays`) ou o legado `weekday`; null se não for semanal. */
+function weeklyOf(event: EventPeriod): string | null {
+  if (event.recurrence !== "weekly") return null;
+  if (event.weekdays?.length) return weekdaysLabel(event.weekdays);
+  return event.weekday != null ? weeklyLabel(event.weekday) : null;
+}
+
+/** Período em mais de um trecho (ex.: 10 a 12 e 17 a 19 de out); null = um trecho só. */
+function periodsOf(event: EventPeriod): { startsOn: string; endsOn: string }[] | null {
+  return event.recurrence === "range" && event.periods && event.periods.length > 1
+    ? event.periods
+    : null;
+}
+
+/**
+ * "10 a 12 e 17 a 19 de out" (mesmo mês) · "30 de out a 2 de nov e 7 a 9 de nov".
+ * `long`: mês por extenso ("de outubro").
+ */
+export function periodsLabel(
+  periods: readonly { startsOn: string; endsOn: string }[],
+  long = false,
+): string {
+  const dates = periods.flatMap((p) => [parseISODate(p.startsOn), parseISODate(p.endsOn)]);
+  const [first] = dates;
+  const sameMonth =
+    first !== undefined &&
+    dates.every(
+      (d) => d.getMonth() === first.getMonth() && d.getFullYear() === first.getFullYear(),
+    );
+  const span = (p: { startsOn: string; endsOn: string }) => {
+    const a = parseISODate(p.startsOn);
+    const b = parseISODate(p.endsOn);
+    return p.startsOn === p.endsOn ? `${a.getDate()}` : `${a.getDate()} a ${b.getDate()}`;
+  };
+  const parts = sameMonth
+    ? periods.map(span)
+    : periods.map((p) =>
+        long ? longRangeLabel(p.startsOn, p.endsOn) : shortRangeLabel(p.startsOn, p.endsOn),
+      );
+  const list = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} e ${parts.at(-1)}` : parts[0];
+  return sameMonth && first ? `${list} de ${monthName(first, !long)}` : (list ?? "");
+}
+
+/** Dias somados dos períodos. */
+function periodsDays(periods: readonly { startsOn: string; endsOn: string }[]): number {
+  return periods.reduce((n, p) => n + daysBetween(p.startsOn, p.endsOn) + 1, 0);
 }
 
 /**
@@ -143,7 +206,10 @@ function isMultiDay<T extends { startsOn: string; endsOn: string | null }>(
  * agenda (`date`), senão o próximo (`nextDate`) ou o início.
  */
 export function rowDateLabel(event: EventRowData, today: string, date?: string): string {
-  if (event.recurrence === "weekly" && event.weekday != null) return weeklyLabel(event.weekday);
+  const weekly = weeklyOf(event);
+  if (weekly) return weekly;
+  const periods = periodsOf(event);
+  if (periods) return periodsLabel(periods);
   if (event.recurrence === "range" && isMultiDay(event)) {
     return shortRangeLabel(event.startsOn, event.endsOn);
   }
@@ -181,7 +247,10 @@ export function longEventLabel(p: Pick<EventPeriod, "startsOn" | "endsOn">): str
  * todos os dias"; vários dias → "1 a 3 de novembro · 3 dias"; um dia → data longa.
  */
 export function evWhen(event: EventPeriod & { isLongRunning: boolean }): string {
-  if (event.recurrence === "weekly" && event.weekday != null) return weeklyLabel(event.weekday);
+  const weekly = weeklyOf(event);
+  if (weekly) return weekly;
+  const periods = periodsOf(event);
+  if (periods) return `${periodsLabel(periods, true)} · ${periodsDays(periods)} dias`;
   if (event.isLongRunning) {
     const period = event.endsOn
       ? longRangeLabel(event.startsOn, event.endsOn)

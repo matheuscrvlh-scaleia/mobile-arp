@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { StyleSheet, View } from "react-native";
 import { useSession } from "@/core/auth/session";
 import { BottomSpacer, ScreenContainer } from "@/design";
+import { useNpsPrompt } from "@/features/nps";
 import { useRefreshControl } from "@/shared/hooks/useRefreshControl";
 import { QueryFallback } from "@/shared/query/QueryFallback";
 import { queryView } from "@/shared/query/query-view";
@@ -22,6 +23,7 @@ export default function HomeScreen() {
   const refreshControl = useRefreshControl(() => refreshHome(qc));
   const view = queryView(home);
   const data = home.data;
+  useNpsPrompt();
 
   return (
     <ScreenContainer scroll scrollProps={{ refreshControl }}>

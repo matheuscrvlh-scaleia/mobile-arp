@@ -24,8 +24,9 @@ type Shortcut = {
 };
 
 /**
- * Atalhos da Início (.cats), em linhas de 4 (Fase 2): as 3 categorias e
- * Eventos; Cupons, Mapa, Estacionamento e Clube ARP; e os de conteúdo.
+ * Atalhos da Início (.cats), em linhas de 4: as 3 categorias e Eventos;
+ * Cupons, Mapa, Estacionamento e Clube ARP; Circuito Cultural, Sustentarp,
+ * Novidades e Nossa História.
  * `couponCount`: cupons no ar (badge; sem a home, sem badge).
  */
 export function ShortcutGrid({ couponCount }: { couponCount: number | undefined }) {
@@ -51,6 +52,8 @@ export function ShortcutGrid({ couponCount }: { couponCount: number | undefined 
     { icon: "award", label: "Clube ARP", variant: "dark", onPress: go("/desafios") },
     { icon: "palette", label: "Circuito Cultural", onPress: go("/circuito") },
     { icon: "recycle", label: "Sustentarp", onPress: go("/sustentarp") },
+    { icon: "newspaper", label: "Novidades", onPress: go("/novidades") },
+    { icon: "landmark", label: "Nossa História", onPress: go("/texto/history_full") },
   ];
 
   return (

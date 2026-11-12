@@ -1,59 +1,123 @@
 import { Image } from "expo-image";
 import { useWindowDimensions, View } from "react-native";
-import type { Club, ClubPrize, ClubSeal } from "@/contracts/app/club";
+import type { Club, ClubPrize, ClubRedemption, ClubSeal } from "@/contracts/app/club";
 import { PRIZE_KIND_LABEL } from "@/contracts/gamification";
-import { Button, createStyles, Icon, layout, Pill, SealBadge, Text, useColors } from "@/design";
+import {
+  Button,
+  createStyles,
+  fontFamily,
+  Icon,
+  layout,
+  motion,
+  Pill,
+  PressableScale,
+  SealBadge,
+  Text,
+  tracking,
+  useColors,
+} from "@/design";
 import { requireAuth } from "@/features/auth";
-import { formatPoints, sealStateLabel } from "../lib/club";
-import { openJoinRankingSheet, openLeaveRankingSheet } from "../sheets/club-sheets";
+import { dayMonth, formatTrevos, sealCountLabel } from "../lib/club";
+import {
+  openJoinRankingSheet,
+  openLeaveRankingSheet,
+  openPrizeSheet,
+  openRedemptionSheet,
+  openSealHistorySheet,
+} from "../sheets/club-sheets";
 
 const COLS = 3;
 const GAP = 10;
 
-/** Selos do Clube: valendo ("vence dd/mm"), vencidos ("venceu dd/mm") e os que faltam ("+N pontos"). */
-export function ClubSealGrid({ seals }: { seals: readonly ClubSeal[] }) {
+/**
+ * Selos como categorias colecionáveis (Fio Cultural, Transforma, Sabores…):
+ * quantas conquistas em cada uma. Tocar abre o histórico da categoria.
+ */
+export function ClubSealGrid({
+  seals,
+  signedIn,
+}: {
+  seals: readonly ClubSeal[];
+  signedIn: boolean;
+}) {
   const styles = useStyles();
   const { width } = useWindowDimensions();
   const cell = Math.floor((width - layout.gutter * 2 - GAP * (COLS - 1)) / COLS);
   return (
     <View style={styles.grid}>
       {seals.map((s) => {
-        const active = s.state === "active";
-        const label = sealStateLabel(s);
+        const earned = s.times > 0;
+        const count = sealCountLabel(s.times);
         return (
-          <View
+          <PressableScale
             key={s.seal.id}
+            scaleTo={motion.pressScale.card}
+            onPress={() => openSealHistorySheet(s, signedIn)}
             style={[styles.seal, { width: cell }]}
-            accessible
-            accessibilityLabel={`Selo ${s.seal.name}, ${label}${s.repeatable ? ", repetível" : ""}`}
+            accessibilityRole="button"
+            accessibilityLabel={`Selo ${s.seal.name}, ${count}. Ver conquistas`}
           >
-            <SealBadge seal={s.seal} size={60} locked={!active} />
+            <SealBadge seal={s.seal} size={60} locked={!earned} />
             <Text
               variant="smallStrong"
               weight={650}
               align="center"
               numberOfLines={2}
-              tone={active ? "text" : "textMuted"}
+              tone={earned ? "text" : "textMuted"}
             >
               {s.seal.name}
             </Text>
-            <Text
-              variant="caption"
-              align="center"
-              tone={s.state === "expired" ? "dangerText" : active ? "brandText" : "textMuted"}
-            >
-              {label}
-            </Text>
-          </View>
+            <View style={[styles.count, earned && styles.countOn]}>
+              <Text variant="caption" weight={700} tone={earned ? "brandText" : "textMuted"}>
+                {count}
+              </Text>
+            </View>
+          </PressableScale>
         );
       })}
     </View>
   );
 }
 
+/** Trocas feitas no app esperando retirada no Mercado Local (com o código). */
+export function PendingRedemptions({ items }: { items: readonly ClubRedemption[] }) {
+  const styles = useStyles();
+  const colors = useColors();
+  if (items.length === 0) return null;
+  return (
+    <View style={styles.list}>
+      {items.map((r) => (
+        <PressableScale
+          key={r.id}
+          scaleTo={motion.pressScale.card}
+          onPress={() => openRedemptionSheet(r)}
+          style={styles.pending}
+          accessibilityRole="button"
+          accessibilityLabel={`${r.prize.name}: código ${r.code.split("").join(" ")}. Mostre no Mercado Local`}
+        >
+          <View style={styles.pendingIcon}>
+            <Icon name="ticket-check" color={colors.onBrand} />
+          </View>
+          <View style={styles.pText}>
+            <Text variant="bodyStrong" numberOfLines={1}>
+              {r.prize.name}
+            </Text>
+            <Text variant="caption" tone="textMuted">
+              Retire no Mercado Local{r.expiresAt ? ` até ${dayMonth(r.expiresAt)}` : ""}
+            </Text>
+          </View>
+          <Text style={styles.code} tabular>
+            {r.code}
+          </Text>
+        </PressableScale>
+      ))}
+    </View>
+  );
+}
+
 /**
- * Lojinha: só mostra os prêmios ("Dá para trocar" ou "Faltam N"). A troca é
- * feita pela equipe no Centro de Informações, que confere o estoque na hora.
+ * Lojinha: tocar no prêmio abre foto, descrição e como retirar, com o botão
+ * de trocar (gera o código para o Mercado Local).
  */
 export function PrizeList({
   prizes,
@@ -77,15 +141,21 @@ export function PrizeList({
       <View style={styles.how}>
         <Icon name="info" size={18} color={colors.brandText} />
         <Text variant="small" tone="textMuted" style={styles.howText}>
-          Para trocar, vá ao Centro de Informações e diga seu nome ou e-mail. A equipe confere seus
-          pontos e entrega o prêmio na hora.
+          Troque aqui no app: você recebe um código e retira o prêmio no Mercado Local.
         </Text>
       </View>
       {prizes.map((p) => {
         const missing = total === null ? p.points : Math.max(0, p.points - total);
         const can = total !== null && missing === 0;
         return (
-          <View key={p.id} style={styles.prize}>
+          <PressableScale
+            key={p.id}
+            scaleTo={motion.pressScale.card}
+            onPress={() => openPrizeSheet(p, total)}
+            style={styles.prize}
+            accessibilityRole="button"
+            accessibilityLabel={`${p.name}, ${formatTrevos(p.points)}. ${can ? "Dá para trocar" : "Ver detalhes"}`}
+          >
             <View style={styles.pImg}>
               {p.imageUrl ? (
                 <Image source={p.imageUrl} style={styles.pImgFill} contentFit="cover" />
@@ -101,15 +171,17 @@ export function PrizeList({
                 {PRIZE_KIND_LABEL[p.kind]} · restam {p.stock}
               </Text>
               <Text variant="smallStrong" tone="brandText">
-                {formatPoints(p.points)}
+                {formatTrevos(p.points)}
               </Text>
             </View>
             {can ? (
-              <Pill label="Dá para trocar" variant="brand" />
-            ) : total === null ? null : (
+              <Pill label="Trocar" variant="brand" />
+            ) : total === null ? (
+              <Icon name="chevron-right" size={18} color={colors.textMuted} />
+            ) : (
               <Pill label={`Faltam ${missing}`} variant="default" />
             )}
-          </View>
+          </PressableScale>
         );
       })}
     </View>
@@ -184,7 +256,12 @@ function RankRow({
         {nickname}
         {mine ? " (você)" : ""}
       </Text>
-      <Text variant="smallStrong" tabular tone="brandText">
+      <Text
+        variant="smallStrong"
+        tabular
+        tone="brandText"
+        accessibilityLabel={formatTrevos(points)}
+      >
         {points.toLocaleString("pt-BR")}
       </Text>
     </View>
@@ -202,6 +279,13 @@ const useStyles = createStyles((t) => ({
     alignItems: "center",
     gap: 6,
   },
+  count: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: t.colors.surfaceRaised,
+  },
+  countOn: { backgroundColor: t.colors.brand50 },
   empty: { marginHorizontal: layout.gutter },
   how: { flexDirection: "row", gap: 8, alignItems: "flex-start", paddingHorizontal: 4 },
   howText: { flex: 1 },
@@ -225,6 +309,28 @@ const useStyles = createStyles((t) => ({
   },
   pImgFill: { width: "100%", height: "100%" },
   pText: { flex: 1, minWidth: 0, gap: 2 },
+  pending: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 12,
+    borderRadius: 24,
+    backgroundColor: t.colors.brand50,
+  },
+  pendingIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: t.colors.brand,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  code: {
+    fontFamily: fontFamily(800),
+    fontSize: 17,
+    letterSpacing: tracking(17, 0.12),
+    color: t.colors.text,
+  },
   rank: {
     marginHorizontal: layout.gutter,
     padding: 14,

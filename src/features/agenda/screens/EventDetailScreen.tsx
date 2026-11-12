@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View } from "react-native";
+import { Linking, View } from "react-native";
 import type { EventDetail } from "@/contracts/app/agenda";
 import { isApiError } from "@/core/api/errors";
 import {
@@ -13,6 +13,7 @@ import {
   NavHeader,
   ScreenContainer,
   Text,
+  toast,
   useCtaBarHeight,
 } from "@/design";
 import { goBackOr, openPath } from "@/navigation/navigate";
@@ -28,6 +29,12 @@ import { useEventActions } from "../hooks/useEventActions";
 import { eventFacts, isEventEnded } from "../lib/event-facts";
 
 const back = () => goBackOr("/");
+
+/** Venda de ingresso fica no site do organizador. */
+function openTicket(url: string | null) {
+  if (!url) return;
+  Linking.openURL(url).catch(() => toast.show("Não foi possível abrir o link", "circle-x"));
+}
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -118,6 +125,17 @@ function EventDetailView({ event, refreshControl }: ViewProps) {
               );
             })}
           </Rules>
+          {event.ticketUrl && !ended ? (
+            <Button
+              label="Comprar ingresso"
+              variant="brand"
+              iconLeft="ticket"
+              iconRight="external-link"
+              onPress={() => openTicket(event.ticketUrl)}
+              accessibilityHint="Abre a página de venda no navegador"
+              style={styles.ticket}
+            />
+          ) : null}
           {event.awardsSeal && !ended ? (
             <SealCallout onPress={() => openPath("/desafios")} />
           ) : null}
@@ -153,5 +171,6 @@ function EventDetailView({ event, refreshControl }: ViewProps) {
 const useStyles = createStyles((t) => ({
   fill: { flex: 1, backgroundColor: t.colors.bg },
   flex: { flex: 1 },
+  ticket: { marginTop: 16 },
   desc: { marginTop: 16, lineHeight: 23 },
 }));

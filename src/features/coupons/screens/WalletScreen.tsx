@@ -11,7 +11,9 @@ import {
   Icon,
   IconButton,
   layout,
+  motion,
   NavHeader,
+  PressableScale,
   radii,
   ScreenContainer,
   Segmented,
@@ -21,6 +23,7 @@ import {
   useColors,
   withAlpha,
 } from "@/design";
+import { PendingRedemptions, sealsSummary, TrevoBalanceCard, useClub } from "@/features/club";
 import { openPath } from "@/navigation/navigate";
 import { useRefreshControl } from "@/shared/hooks/useRefreshControl";
 import { QueryFallback } from "@/shared/query/QueryFallback";
@@ -29,6 +32,10 @@ import { useWallet } from "../api/coupons";
 import { WalletItem } from "../components/WalletItem";
 import { effectiveStatus } from "../lib/claim-status";
 
+/**
+ * Minha carteira: o lugar dos benefícios. Saldo de Trevos (com o extrato),
+ * prêmios para retirar, cupons (ativos, usados, expirados) e conquistas.
+ */
 export default function WalletScreen() {
   const status = useSession((s) => s.status);
   if (status === "guest") return <GuestWallet />;
@@ -39,12 +46,20 @@ function GuestWallet() {
   const router = useRouter();
   const styles = useStyles();
   return (
-    <ScreenContainer top="none">
-      <NavHeader title="Meus cupons" />
+    <ScreenContainer top="none" scroll>
+      <NavHeader title="Minha carteira" />
+      <View style={styles.headTop}>
+        <TrevoBalanceCard
+          total={null}
+          validUntil={null}
+          onStatement={() => undefined}
+          onSignIn={() => router.push("/entrar")}
+        />
+      </View>
       <EmptyState
         icon="wallet"
         title="Sua carteira aparece aqui"
-        text="Crie sua conta para pegar cupons."
+        text="Crie sua conta para pegar cupons, ganhar Trevos e trocar por prêmios."
         action={{ label: "Criar conta", onPress: () => router.push("/cadastro") }}
         style={styles.guest}
       />
@@ -53,21 +68,29 @@ function GuestWallet() {
 }
 
 function SignedInWallet({ restoring }: { restoring: boolean }) {
+  const router = useRouter();
   const styles = useStyles();
   const colors = useColors();
   const [tab, setTab] = useState<WalletTab>("active");
   const query = useWallet(tab);
+  const club = useClub();
   // toda aba devolve os contadores; os da aba "ativos" seguram o número enquanto a outra carrega
   const active = useWallet("active");
   const claims = query.data?.pages.flatMap((p) => p.data) ?? [];
   const counts = query.data?.pages[0]?.counts ?? active.data?.pages[0]?.counts;
-  const refreshControl = useRefreshControl(query.refetch);
+  const refreshControl = useRefreshControl(async () => {
+    await Promise.all([query.refetch(), club.refetch()]);
+  });
   // "agora" da lista: avança quando um contador zera (vencido offline sai de "ativo")
   const [now, setNow] = useState(() => Date.now());
   const onExpire = () => {
     setNow(Date.now());
     void query.refetch();
   };
+  const points = club.data?.points ?? null;
+  const pending = club.data?.pendingRedemptions ?? [];
+  const seals = sealsSummary(club.data?.seals ?? []);
+  const openStatement = () => router.push("/carteira/trevos");
 
   const view = restoring ? "loading" : queryView(query);
   let empty: ReactElement;
@@ -82,7 +105,6 @@ function SignedInWallet({ restoring }: { restoring: boolean }) {
           <View style={styles.skeletons}>
             <Skeleton height={102} radius={radii.xl} />
             <Skeleton height={102} radius={radii.xl} />
-            <Skeleton height={102} radius={radii.xl} />
           </View>
         }
       />
@@ -90,6 +112,7 @@ function SignedInWallet({ restoring }: { restoring: boolean }) {
   } else {
     empty = (
       <EmptyState
+        compact
         icon="ticket"
         title="Nada por aqui"
         text={
@@ -99,17 +122,24 @@ function SignedInWallet({ restoring }: { restoring: boolean }) {
     );
   }
 
-  return (
-    <ScreenContainer top="none">
-      <NavHeader
+  const header = (
+    <View>
+      <View style={styles.headTop}>
+        <TrevoBalanceCard
+          total={points?.total ?? 0}
+          validUntil={points?.validUntil ?? null}
+          onStatement={openStatement}
+        />
+      </View>
+      {pending.length > 0 ? (
+        <>
+          <SectionTitle title="Prêmios para retirar" />
+          <PendingRedemptions items={pending} />
+        </>
+      ) : null}
+      <SectionTitle
         title="Meus cupons"
-        right={
-          <IconButton
-            icon="plus"
-            accessibilityLabel="Pegar mais cupons"
-            onPress={() => openPath("/cupons")}
-          />
-        }
+        action={{ label: "Pegar cupons", onPress: () => openPath("/cupons") }}
       />
       <View style={styles.segment}>
         <Segmented<WalletTab>
@@ -130,6 +160,56 @@ function SignedInWallet({ restoring }: { restoring: boolean }) {
           </View>
         ) : null}
       </View>
+    </View>
+  );
+
+  const footer = (
+    <>
+      {query.isFetchingNextPage ? (
+        <View style={styles.more}>
+          <Spinner color={colors.textMuted} />
+        </View>
+      ) : null}
+      <SectionTitle
+        title="Minhas conquistas"
+        action={{ label: "Ver no Clube", onPress: () => openPath("/desafios") }}
+      />
+      <PressableScale
+        scaleTo={motion.pressScale.card}
+        onPress={() => openPath("/desafios")}
+        accessibilityRole="button"
+        accessibilityLabel={`${seals.total} selos conquistados. Abrir o Clube ARP`}
+        style={styles.conquests}
+      >
+        <View style={styles.conquestIcon}>
+          <Icon name="award" size={20} color={colors.brandText} />
+        </View>
+        <View style={styles.conquestText}>
+          <Text variant="bodyStrong">
+            {seals.total} {seals.total === 1 ? "selo conquistado" : "selos conquistados"}
+          </Text>
+          <Text variant="caption" tone="textMuted">
+            {seals.last ? `Último: ${seals.last}` : "Cumpra desafios para ganhar selos"}
+          </Text>
+        </View>
+        <Icon name="chevron-right" size={18} color={colors.textMuted} />
+      </PressableScale>
+      <BottomSpacer kind="safe" />
+    </>
+  );
+
+  return (
+    <ScreenContainer top="none">
+      <NavHeader
+        title="Minha carteira"
+        right={
+          <IconButton
+            icon="receipt-text"
+            accessibilityLabel="Extrato de Trevos"
+            onPress={openStatement}
+          />
+        }
+      />
       <FlashList<Claim>
         data={claims}
         keyExtractor={(c) => c.id}
@@ -139,17 +219,9 @@ function SignedInWallet({ restoring }: { restoring: boolean }) {
             <WalletItem claim={item} status={effectiveStatus(item, now)} onExpire={onExpire} />
           </View>
         )}
+        ListHeaderComponent={header}
         ListEmptyComponent={empty}
-        ListFooterComponent={
-          <>
-            {query.isFetchingNextPage ? (
-              <View style={styles.more}>
-                <Spinner color={colors.textMuted} />
-              </View>
-            ) : null}
-            <BottomSpacer kind="safe" />
-          </>
-        }
+        ListFooterComponent={footer}
         onEndReached={() => {
           if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage();
         }}
@@ -161,9 +233,47 @@ function SignedInWallet({ restoring }: { restoring: boolean }) {
   );
 }
 
+function SectionTitle({
+  title,
+  action,
+}: {
+  title: string;
+  action?: { label: string; onPress: () => void };
+}) {
+  const styles = useStyles();
+  return (
+    <View style={styles.secH}>
+      <Text variant="h2" accessibilityRole="header">
+        {title}
+      </Text>
+      {action ? (
+        <Text
+          variant="smallStrong"
+          tone="brandText"
+          accessibilityRole="link"
+          onPress={action.onPress}
+          style={styles.secAction}
+        >
+          {action.label}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
 const useStyles = createStyles((t) => ({
-  guest: { marginTop: 80 },
-  segment: { paddingHorizontal: layout.gutter, paddingTop: 18, paddingBottom: 16 },
+  guest: { marginTop: 32 },
+  headTop: { marginTop: 12 },
+  secH: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    marginTop: layout.sectionTop,
+    marginBottom: layout.sectionBottom,
+    marginHorizontal: layout.gutter,
+  },
+  secAction: { paddingVertical: 8, paddingLeft: 12 },
+  segment: { paddingHorizontal: layout.gutter, paddingBottom: 16 },
   notice: {
     marginTop: 14,
     padding: 14,
@@ -176,4 +286,22 @@ const useStyles = createStyles((t) => ({
   item: { paddingHorizontal: layout.gutter, paddingBottom: 12 },
   skeletons: { paddingHorizontal: layout.gutter, gap: 12 },
   more: { paddingVertical: 16, alignItems: "center" },
+  conquests: {
+    marginHorizontal: layout.gutter,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    borderRadius: 22,
+    backgroundColor: t.colors.surface,
+  },
+  conquestIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: t.colors.brand50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  conquestText: { flex: 1, minWidth: 0, gap: 2 },
 }));

@@ -18,6 +18,7 @@ import {
   Text,
   useColors,
 } from "@/design";
+import { WalletButton } from "@/navigation/HeaderButtons";
 import { openPath } from "@/navigation/navigate";
 import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
 import { useRefreshControl } from "@/shared/hooks/useRefreshControl";
@@ -81,11 +82,14 @@ export default function StoresScreen() {
     <View style={styles.header}>
       <NavHeader
         right={
-          <IconButton
-            icon="map"
-            accessibilityLabel="Ver no mapa"
-            onPress={() => openPath("/mapa")}
-          />
+          <View style={styles.headActions}>
+            <WalletButton />
+            <IconButton
+              icon="map"
+              accessibilityLabel="Ver no mapa"
+              onPress={() => openPath("/mapa")}
+            />
+          </View>
         }
       />
       <Text variant="title" accessibilityRole="header" style={styles.title}>
@@ -191,6 +195,7 @@ export default function StoresScreen() {
 }
 
 const useStyles = createStyles((t) => ({
+  headActions: { flexDirection: "row", gap: 8 },
   header: { paddingBottom: 16 },
   title: { marginTop: 14, paddingHorizontal: layout.gutter },
   segm: { marginTop: 16, paddingHorizontal: layout.gutter },

@@ -21,6 +21,7 @@ import {
 } from "@/design";
 import { MERCHANT_HOME } from "@/features/merchant";
 import { useFavoriteStores } from "@/features/stores";
+import { WalletButton } from "@/navigation/HeaderButtons";
 import { openPath } from "@/navigation/navigate";
 import { useRefreshControl } from "@/shared/hooks/useRefreshControl";
 import { plural } from "@/shared/lib/format";
@@ -100,11 +101,14 @@ function SignedInProfile() {
       <NavHeader
         title="Perfil"
         right={
-          <IconButton
-            icon="settings"
-            accessibilityLabel="Dados da conta"
-            onPress={() => router.push("/conta")}
-          />
+          <View style={styles.headActions}>
+            <WalletButton />
+            <IconButton
+              icon="settings"
+              accessibilityLabel="Dados da conta"
+              onPress={() => router.push("/conta")}
+            />
+          </View>
         }
       />
 
@@ -114,7 +118,7 @@ function SignedInProfile() {
           subtitle={`Na ARP desde ${memberSince(visitor.createdAt)}`}
           avatarUrl={mediaUrl(visitor.avatarUrl)}
           initials={initials(visitor.name)}
-          badge={summary ? `${plural(points, "ponto", "pontos")} no Clube ARP` : undefined}
+          badge={summary ? `${plural(points, "Trevo", "Trevos")} no Clube ARP` : undefined}
         />
       ) : (
         <View style={styles.headSkeleton}>
@@ -132,7 +136,7 @@ function SignedInProfile() {
               {
                 icon: "award",
                 value: summary.clubPoints.toLocaleString("pt-BR"),
-                label: "pontos",
+                label: summary.clubPoints === 1 ? "trevo" : "trevos",
                 onPress: () => openPath("/desafios"),
               },
               {
@@ -270,6 +274,7 @@ function MerchantItem() {
 }
 
 const styles = StyleSheet.create({
+  headActions: { flexDirection: "row", gap: 8 },
   merchantStore: { maxWidth: 120 },
   flex: { flex: 1 },
   guestHead: { marginTop: 20 },

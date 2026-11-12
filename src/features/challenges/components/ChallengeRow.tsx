@@ -23,9 +23,9 @@ export function ChallengeRow({ challenge, done, onPress }: ChallengeRowProps) {
   const colors = useColors();
   const styles = useStyles();
   const qr = challenge.validation === "qr";
-  // Fase 2: pontos, uso único ou repetível e o produto do parceiro.
+  // Trevos, uso único ou repetível e o produto do parceiro.
   const meta = [
-    `+${challenge.points} ${challenge.points === 1 ? "ponto" : "pontos"}`,
+    `+${challenge.points} ${challenge.points === 1 ? "Trevo" : "Trevos"}`,
     challenge.repeatable ? "Repetível" : "Uso único",
     challenge.product ? `Parceiro: ${challenge.product}` : null,
   ]

@@ -2,16 +2,9 @@ import { useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { mediaUrl } from "@/core/api/media";
 import { useSession } from "@/core/auth/session";
-import {
-  Avatar,
-  IconButton,
-  layout,
-  motion,
-  PressableScale,
-  SearchTrigger,
-  Text,
-  toast,
-} from "@/design";
+import { Avatar, IconButton, layout, motion, PressableScale, SearchTrigger, Text } from "@/design";
+import { WalletButton } from "@/navigation/HeaderButtons";
+import { openPath } from "@/navigation/navigate";
 import { useNow } from "@/shared/hooks/useNow";
 import { formatLongDate, greeting } from "@/shared/lib/format";
 import { firstName, initials } from "@/shared/lib/names";
@@ -48,11 +41,14 @@ export function HomeGreeting() {
             {formatLongDate(now)}
           </Text>
         </View>
-        <IconButton
-          icon="bell"
-          accessibilityLabel="Novidades"
-          onPress={() => toast.show("Você está em dia com as novidades", "bell")}
-        />
+        <View style={styles.actions}>
+          <WalletButton />
+          <IconButton
+            icon="bell"
+            accessibilityLabel="Novidades"
+            onPress={() => openPath("/novidades")}
+          />
+        </View>
       </View>
       <SearchTrigger
         label="Buscar lojas, restaurantes, eventos"
@@ -67,6 +63,7 @@ const styles = StyleSheet.create({
   wrap: { paddingHorizontal: layout.gutter },
   hello: { flexDirection: "row", alignItems: "center", gap: 12 },
   texts: { flex: 1, minWidth: 0 },
+  actions: { flexDirection: "row", gap: 8 },
   date: { fontSize: 14, lineHeight: 19, marginTop: 2 },
   search: { marginTop: 16 },
 });

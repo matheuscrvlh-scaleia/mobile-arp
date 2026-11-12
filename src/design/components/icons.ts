@@ -70,6 +70,7 @@ import DrumstickIcon from "lucide-react-native/icons/drumstick";
 import DumbbellIcon from "lucide-react-native/icons/dumbbell";
 import EggFriedIcon from "lucide-react-native/icons/egg-fried";
 import MusicIcon from "lucide-react-native/icons/eighth-notes";
+import ExternalLinkIcon from "lucide-react-native/icons/external-link";
 import EyeIcon from "lucide-react-native/icons/eye";
 import EyeOffIcon from "lucide-react-native/icons/eye-off";
 import SmileIcon from "lucide-react-native/icons/face-slightly-smiling";
@@ -123,6 +124,8 @@ import MicVocalIcon from "lucide-react-native/icons/mic-vocal";
 import MoonIcon from "lucide-react-native/icons/moon";
 import MountainSnowIcon from "lucide-react-native/icons/mountain-snow";
 import MousePointerClickIcon from "lucide-react-native/icons/mouse-pointer-click";
+import NewspaperIcon from "lucide-react-native/icons/newspaper";
+import PackageCheckIcon from "lucide-react-native/icons/package-check";
 import PaletteIcon from "lucide-react-native/icons/palette";
 import PartyPopperIcon from "lucide-react-native/icons/party-popper";
 import PawPrintIcon from "lucide-react-native/icons/paw-print";
@@ -134,6 +137,7 @@ import PlaneIcon from "lucide-react-native/icons/plane";
 import PlusIcon from "lucide-react-native/icons/plus";
 import PopcornIcon from "lucide-react-native/icons/popcorn";
 import QrCodeIcon from "lucide-react-native/icons/qr-code";
+import ReceiptTextIcon from "lucide-react-native/icons/receipt-text";
 import RecycleIcon from "lucide-react-native/icons/recycle";
 import RepeatIcon from "lucide-react-native/icons/repeat";
 import RotateCcwIcon from "lucide-react-native/icons/rotate-ccw";
@@ -255,6 +259,7 @@ export const ICONS = {
   drumstick: DrumstickIcon,
   dumbbell: DumbbellIcon,
   "egg-fried": EggFriedIcon,
+  "external-link": ExternalLinkIcon,
   film: FilmIcon,
   fingerprint: FingerprintIcon,
   fish: FishIcon,
@@ -274,6 +279,8 @@ export const ICONS = {
   moon: MoonIcon,
   eye: EyeIcon,
   "eye-off": EyeOffIcon,
+  newspaper: NewspaperIcon,
+  "package-check": PackageCheckIcon,
   phone: PhoneIcon,
   guitar: GuitarIcon,
   hamburger: HamburgerIcon,
@@ -319,6 +326,7 @@ export const ICONS = {
   plus: PlusIcon,
   popcorn: PopcornIcon,
   "qr-code": QrCodeIcon,
+  "receipt-text": ReceiptTextIcon,
   recycle: RecycleIcon,
   repeat: RepeatIcon,
   "rotate-ccw": RotateCcwIcon,

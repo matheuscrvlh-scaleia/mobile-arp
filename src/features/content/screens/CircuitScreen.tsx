@@ -18,6 +18,9 @@ import {
   Photo,
   radii,
   ScreenContainer,
+  SheetActions,
+  SheetIcon,
+  SheetTitle,
   sheet,
   Text,
   useColors,
@@ -40,15 +43,50 @@ export const ART_KIND_ICON: Record<ArtPointKind, KnownIconName> = {
 /** Proporção do mapa do Circuito (largura / altura) enquanto a ARP não manda o oficial. */
 const MAP_ASPECT = 4 / 5;
 
+/** Ponto do Circuito como no site: foto grande, nome, artista, local e o texto. */
 function openPointSheet(p: ArtPoint) {
-  sheet.message({
-    icon: ART_KIND_ICON[p.kind],
-    title: `${p.number}. ${p.name}`,
-    text: [p.artist && `Artista: ${p.artist}`, p.place && `Local: ${p.place}`, p.description]
-      .filter(Boolean)
-      .join("\n"),
-    actions: [{ label: "Fechar", variant: "soft" }],
-  });
+  sheet.open(({ close }) => <PointDetail point={p} onClose={close} />, { scrollable: true });
+}
+
+function PointDetail({ point: p, onClose }: { point: ArtPoint; onClose: () => void }) {
+  const styles = useStyles();
+  const photo = mediaUrl(p.imageUrl);
+  const paragraphs = p.description.split(/\n\s*\n|\n/).filter((s) => s.trim());
+  return (
+    <>
+      {photo ? (
+        <Photo source={photo} displayWidth={360} style={styles.pointPhoto} />
+      ) : (
+        <SheetIcon name={ART_KIND_ICON[p.kind]} background="brand" />
+      )}
+      <Text variant="caption" tone="brandText" weight={700} style={styles.pointKind}>
+        {String(p.number).padStart(2, "0")} · {ART_POINT_KIND_LABEL[p.kind]}
+      </Text>
+      <SheetTitle>{p.name}</SheetTitle>
+      {[p.artist, p.place].some(Boolean) ? (
+        <Text variant="small" tone="textMuted" align="center">
+          {[p.artist, p.place].filter(Boolean).join(" · ")}
+        </Text>
+      ) : null}
+      <View style={styles.pointText}>
+        {paragraphs.length > 0 ? (
+          paragraphs.map((s, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: parágrafos na ordem do texto
+            <Text key={i} variant="body" tone="textSecondary">
+              {s.trim()}
+            </Text>
+          ))
+        ) : (
+          <Text variant="body" tone="textMuted">
+            Texto em preparação pela ARP.
+          </Text>
+        )}
+      </View>
+      <SheetActions>
+        <Button label="Fechar" variant="soft" onPress={onClose} />
+      </SheetActions>
+    </>
+  );
 }
 
 /**
@@ -164,6 +202,9 @@ export default function CircuitScreen() {
 }
 
 const useStyles = createStyles(() => ({
+  pointPhoto: { alignSelf: "stretch", height: 220, borderRadius: 24, marginBottom: 14 },
+  pointKind: { textAlign: "center", textTransform: "uppercase", marginBottom: 4 },
+  pointText: { alignSelf: "stretch", gap: 10, marginTop: 12, marginBottom: 8 },
   pad: { paddingHorizontal: layout.gutter },
   intro: { marginTop: 8 },
   map: {

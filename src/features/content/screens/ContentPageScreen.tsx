@@ -9,6 +9,7 @@ import {
   createStyles,
   layout,
   NavHeader,
+  Photo,
   ScreenContainer,
   Text,
   toast,
@@ -22,8 +23,18 @@ import { ContentSkeleton } from "../components/ContentSkeleton";
 /** Primeiro acesso (conta nova): Nossa história → Regras da ARP → volta para onde estava. */
 const ONBOARDING_NEXT: Partial<Record<ContentPageKey, ContentPageKey>> = { history: "rules" };
 
+/** Páginas em que o arquivo é a foto do topo. */
+const PHOTO_PAGES = new Set<ContentPageKey>(["history_full", "sustentarp"]);
+
+/** Páginas em que o arquivo é um link para abrir (PDF ou formulário) e o texto do botão. */
+const LINK_LABEL: Partial<Record<ContentPageKey, string>> = {
+  rules: "Baixar as regras (PDF)",
+  sustentarp_friend: "Quero ser amigo do Sustentarp",
+};
+
 /**
- * Texto da ARP (/texto/history|rules|club_rules). Com `boasVindas=1`, faz
+ * Texto da ARP (/texto/<chave>: história, história completa, regras,
+ * regulamento do Clube, Sustentarp e Amigo do Sustentarp). Com `boasVindas=1`, faz
  * parte do primeiro acesso: sem voltar, com o botão para seguir.
  */
 export default function ContentPageScreen() {
@@ -54,8 +65,10 @@ export default function ContentPageScreen() {
   const download = () => {
     const url = mediaUrl(page?.fileUrl);
     if (url)
-      Linking.openURL(url).catch(() => toast.show("Não foi possível abrir o PDF", "circle-x"));
+      Linking.openURL(url).catch(() => toast.show("Não foi possível abrir o link", "circle-x"));
   };
+  const linkLabel = page?.fileUrl ? LINK_LABEL[key] : undefined;
+  const photo = page?.fileUrl && PHOTO_PAGES.has(key) ? mediaUrl(page.fileUrl) : null;
 
   return (
     <ScreenContainer top="none">
@@ -72,6 +85,7 @@ export default function ContentPageScreen() {
           />
         ) : (
           <>
+            {photo ? <Photo source={photo} displayWidth={360} style={styles.photo} /> : null}
             {onboarding ? (
               <Text variant="smallStrong" tone="brand">
                 {key === "history" ? "Bem-vindo à ARP" : "Antes de começar"}
@@ -92,17 +106,28 @@ export default function ContentPageScreen() {
                 Texto em preparação pela ARP.
               </Text>
             )}
+            {key === "history" ? (
+              <Button
+                label="Saiba mais sobre a nossa história"
+                iconRight="arrow-right"
+                variant="soft"
+                onPress={() =>
+                  router.push({ pathname: "/texto/[key]", params: { key: "history_full" } })
+                }
+                style={styles.more}
+              />
+            ) : null}
           </>
         )}
         <BottomSpacer kind="safe" />
       </ScrollView>
-      {(page?.fileUrl && key === "rules") || onboarding ? (
+      {linkLabel || onboarding ? (
         <View style={styles.actions}>
-          {page?.fileUrl && key === "rules" ? (
+          {linkLabel ? (
             <Button
-              label="Baixar as regras (PDF)"
-              iconLeft="download"
-              variant={onboarding ? "soft" : "dark"}
+              label={linkLabel}
+              iconLeft={key === "rules" ? "download" : "hand-heart"}
+              variant={onboarding ? "soft" : key === "rules" ? "dark" : "brand"}
               onPress={download}
             />
           ) : null}
@@ -119,5 +144,7 @@ const useStyles = createStyles(() => ({
   body: { paddingHorizontal: layout.gutter, paddingTop: 8 },
   title: { marginTop: 6, marginBottom: 14 },
   para: { marginBottom: 14 },
+  photo: { height: 200, borderRadius: 24, marginTop: 4, marginBottom: 16 },
+  more: { alignSelf: "flex-start", marginTop: 4, marginBottom: 8 },
   actions: { paddingHorizontal: layout.gutter, paddingBottom: 28, paddingTop: 8, gap: 10 },
 }));

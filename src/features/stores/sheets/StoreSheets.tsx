@@ -19,7 +19,7 @@ import {
   useColors,
 } from "@/design";
 import { type ContactKind, type ContactOption, contactOptions } from "../lib/contact";
-import { openStatus, weekSchedule } from "../lib/hours";
+import { HOURS_NOTICE, openStatus, weekSchedule } from "../lib/hours";
 
 /* Painéis da página da loja: semana de horários e formas de contato. O conteúdo é desenhado
    dentro do OverlayHost (abaixo do ThemeProvider), então acompanha o tema. */
@@ -55,6 +55,7 @@ export function openHoursSheet(store: StoreDetail) {
       <SheetTitle>Horários da {store.name}</SheetTitle>
       <SheetText>{status.label}</SheetText>
       <Week store={store} now={now} />
+      <SheetText>{HOURS_NOTICE}</SheetText>
       <SheetActions>
         <Button label="Fechar" variant="soft" onPress={close} />
       </SheetActions>

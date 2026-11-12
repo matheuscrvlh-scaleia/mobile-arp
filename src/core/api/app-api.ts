@@ -208,13 +208,37 @@ export const appApi = {
       }),
   },
 
-  /** Clube ARP (Fase 2). Só mostra a lojinha: a troca é feita no Centro de Informações. */
+  /**
+   * Clube ARP: Trevos, selos e lojinha. A troca começa no app (reserva os
+   * Trevos e gera o código) e o Mercado Local entrega.
+   */
   club: {
     get: ({ signal }: Signal = {}) =>
       request<App.Club>({ route: R.club.get, schema: S?.clubSchema, signal }),
     joinRanking: (body: App.JoinRankingBody) => request({ route: R.club.joinRanking, body }),
     leaveRanking: () => request({ route: R.club.leaveRanking }),
+    statement: ({ signal }: Signal = {}) =>
+      request<App.TrevoStatement>({
+        route: R.club.statement,
+        schema: S?.trevoStatementSchema,
+        signal,
+      }),
+    /** Recusas: NOT_ENOUGH_POINTS (422), PRIZE_OUT_OF_STOCK (409). */
+    redeem: (prizeId: string) =>
+      request<App.RedeemPrizeResult>({
+        route: R.club.redeem,
+        params: { id: prizeId },
+        schema: S?.redeemPrizeResultSchema,
+      }),
+    cancelRedemption: (id: string) => request({ route: R.club.cancelRedemption, params: { id } }),
   },
+
+  /** Comunicados da ARP (Novidades). */
+  news: ({ signal }: Signal = {}) =>
+    request<ListOf<App.NewsItem>>({ route: R.news, schema: S?.newsSchema, signal }),
+
+  /** NPS: nota de 0 a 10 (e comentário opcional). */
+  nps: (body: App.NpsBody) => request({ route: R.nps, body }),
 
   pushTokens: {
     register: (body: App.RegisterPushTokenBody) => request({ route: R.pushTokens.register, body }),

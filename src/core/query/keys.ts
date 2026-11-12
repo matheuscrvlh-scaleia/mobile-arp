@@ -37,6 +37,8 @@ export const queryKeys = {
   challenges: () => ["public", "challenges"] as const,
   /** Clube ARP: personalizado (pontos), mas abre sem login. */
   club: () => ["public", "club"] as const,
+  /** Novidades (comunicados da ARP). */
+  news: () => ["public", "news"] as const,
   /** Busca geral (não persiste; `q` já normalizado). */
   search: (kind: "stores" | "coupons", q: string) => ["public", "search", kind, q] as const,
 
@@ -48,6 +50,8 @@ export const queryKeys = {
     walletAll: () => ["me", "wallet"] as const,
     /** Um pego (GET /me/claims/:id; abre com o que já está na carteira em cache). */
     claim: (id: string) => ["me", "wallet", "claim", id] as const,
+    /** Extrato de Trevos (conquistas e trocas). */
+    trevos: () => ["me", "trevos"] as const,
   },
 
   merchant: {

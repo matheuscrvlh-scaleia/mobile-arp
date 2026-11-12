@@ -1,24 +1,29 @@
-import { ScrollView, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import type { RecyclingItem } from "@/contracts/content";
+import { mediaUrl } from "@/core/api/media";
 import {
   BottomSpacer,
   Button,
   createStyles,
   hasIcon,
+  IconButton,
   layout,
-  NavHeader,
+  Photo,
   radii,
   ScreenContainer,
   sheet,
   Text,
   useColors,
+  useTopInset,
+  withAlpha,
 } from "@/design";
 import { MonoTile, ResultRow } from "@/features/stores";
-import { openPath } from "@/navigation/navigate";
+import { goBackOr, openPath } from "@/navigation/navigate";
 import { useRefreshControl } from "@/shared/hooks/useRefreshControl";
 import { QueryFallback } from "@/shared/query/QueryFallback";
 import { queryView } from "@/shared/query/query-view";
-import { useRecyclingItems } from "../api/content";
+import { useContentPage, useRecyclingItems } from "../api/content";
 import { ContentSkeleton } from "../components/ContentSkeleton";
 
 function openItemSheet(item: RecyclingItem) {
@@ -37,7 +42,51 @@ function openItemSheet(item: RecyclingItem) {
   });
 }
 
-/** Sustentarp (/sustentarp, Fase 2): o que pode ser descartado e a chamada do desafio. */
+const COVER_HEIGHT = 260;
+
+/** Capa como a das lojas: foto da página "Sustentarp" (painel → Conteúdo) ou a cor da marca. */
+function SustentarpCover() {
+  const c = useColors();
+  const styles = useStyles();
+  const top = useTopInset("header");
+  const { width } = useWindowDimensions();
+  const page = useContentPage("sustentarp");
+  const photo = mediaUrl(page.data?.fileUrl);
+  return (
+    <View style={[styles.cover, { backgroundColor: c.brand }]}>
+      {photo ? (
+        <Photo
+          source={photo}
+          displayWidth={width}
+          style={[StyleSheet.absoluteFill, styles.transparent]}
+        />
+      ) : null}
+      <LinearGradient
+        colors={[withAlpha(c.scrim, 0.4), withAlpha(c.scrim, 0), withAlpha(c.scrim, 0.72)]}
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={[styles.coverTop, { paddingTop: top }]}>
+        <IconButton
+          icon="chevron-left"
+          variant="glass"
+          accessibilityLabel="Voltar"
+          onPress={() => goBackOr("/")}
+        />
+      </View>
+      <View style={styles.coverText}>
+        <Text variant="title" tone="onMedia" accessibilityRole="header">
+          Sustentarp
+        </Text>
+        <Text variant="small" tone="onMedia">
+          O ponto de descarte da ARP
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+/** Sustentarp (/sustentarp): capa, o que pode ser descartado, o desafio e o Amigo do Sustentarp. */
 export default function SustentarpScreen() {
   const c = useColors();
   const styles = useStyles();
@@ -48,14 +97,18 @@ export default function SustentarpScreen() {
   return (
     <ScreenContainer top="none">
       <ScrollView showsVerticalScrollIndicator={false} refreshControl={refreshControl}>
-        <NavHeader />
+        <SustentarpCover />
         <View style={styles.pad}>
-          <Text variant="title" accessibilityRole="header">
-            Sustentarp
-          </Text>
           <Text variant="body" tone="textSecondary" style={styles.intro}>
-            O ponto de descarte da ARP. Toque num item para ver o que ele aceita e o que vira.
+            Toque num item para ver o que ele aceita e o que vira.
           </Text>
+          <Button
+            label="Seja um Amigo do Sustentarp"
+            iconLeft="hand-heart"
+            variant="brand"
+            onPress={() => openPath("/texto/sustentarp_friend")}
+            style={styles.friend}
+          />
         </View>
 
         {view !== "ready" ? (
@@ -101,8 +154,13 @@ export default function SustentarpScreen() {
 }
 
 const useStyles = createStyles(() => ({
+  cover: { height: COVER_HEIGHT, overflow: "hidden", justifyContent: "space-between" },
+  transparent: { backgroundColor: "transparent" },
+  coverTop: { flexDirection: "row", paddingHorizontal: layout.gutter },
+  coverText: { paddingHorizontal: layout.gutter, paddingBottom: 20, gap: 2 },
+  friend: { marginTop: 14, alignSelf: "stretch" },
   pad: { paddingHorizontal: layout.gutter, marginBottom: 12 },
-  intro: { marginTop: 8 },
+  intro: { marginTop: 16 },
   callout: {
     marginHorizontal: layout.gutter,
     marginTop: 20,

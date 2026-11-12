@@ -103,3 +103,6 @@ export function weekSchedule(hours: readonly StoreHours[], date: Date): Schedule
     };
   });
 }
+
+/** Os locatários nem sempre cumprem o horário divulgado: o app avisa. */
+export const HOURS_NOTICE = "Horário divulgado pela loja. Pode ocorrer variação.";

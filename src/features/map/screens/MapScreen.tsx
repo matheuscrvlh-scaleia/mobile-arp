@@ -19,6 +19,7 @@ import {
   useTheme,
 } from "@/design";
 import { useStore } from "@/features/stores";
+import { HomeBackButton } from "@/navigation/HeaderButtons";
 import { plural } from "@/shared/lib/format";
 import { queryView } from "@/shared/query/query-view";
 import { useMapData, useMapStores } from "../api/map";
@@ -166,6 +167,7 @@ export default function MapScreen() {
       ) : null}
 
       <View style={[styles.top, { top: top + 6 }]}>
+        <HomeBackButton variant="white" />
         <SearchField
           dark
           value={q}

@@ -33,7 +33,7 @@ import { InfoTile } from "../components/InfoTile";
 import { OpenDot } from "../components/OpenDot";
 import { COVER_HEIGHT, StoreCover } from "../components/StoreCover";
 import { contactOptions } from "../lib/contact";
-import { formatHoursToday, openStatus } from "../lib/hours";
+import { formatHoursToday, HOURS_NOTICE, openStatus } from "../lib/hours";
 import { storeLocation } from "../lib/location";
 import { openContactSheet, openHoursSheet } from "../sheets/StoreSheets";
 
@@ -182,6 +182,9 @@ function StoreDetailBody({
                   </View>
                 </InfoTile>
               </View>
+              <Text variant="caption" tone="textMuted" style={styles.hoursNote}>
+                {HOURS_NOTICE}
+              </Text>
             </View>
           )}
 
@@ -274,6 +277,7 @@ const useStyles = createStyles((t) => ({
   desc: { lineHeight: 23, marginTop: 16 },
   grid: { gap: 10, marginTop: 18 },
   row: { flexDirection: "row", gap: 10 },
+  hoursNote: { paddingHorizontal: 4 },
   flex: { flex: 1 },
   switch: { marginTop: 4, alignSelf: "flex-start" },
   challenge: { marginTop: 18 },
