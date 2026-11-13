@@ -86,7 +86,10 @@ function SustentarpCover() {
   );
 }
 
-/** Sustentarp (/sustentarp): capa, o que pode ser descartado, o desafio e o Amigo do Sustentarp. */
+/**
+ * Sustentarp (/sustentarp): capa, o que pode ser descartado e o desafio.
+ * "Seja um Amigo do Sustentarp" fica fora até a ARP decidir se entra e onde.
+ */
 export default function SustentarpScreen() {
   const c = useColors();
   const styles = useStyles();
@@ -102,13 +105,6 @@ export default function SustentarpScreen() {
           <Text variant="body" tone="textSecondary" style={styles.intro}>
             Toque num item para ver o que ele aceita e o que vira.
           </Text>
-          <Button
-            label="Seja um Amigo do Sustentarp"
-            iconLeft="hand-heart"
-            variant="brand"
-            onPress={() => openPath("/texto/sustentarp_friend")}
-            style={styles.friend}
-          />
         </View>
 
         {view !== "ready" ? (
@@ -158,7 +154,6 @@ const useStyles = createStyles(() => ({
   transparent: { backgroundColor: "transparent" },
   coverTop: { flexDirection: "row", paddingHorizontal: layout.gutter },
   coverText: { paddingHorizontal: layout.gutter, paddingBottom: 20, gap: 2 },
-  friend: { marginTop: 14, alignSelf: "stretch" },
   pad: { paddingHorizontal: layout.gutter, marginBottom: 12 },
   intro: { marginTop: 16 },
   callout: {

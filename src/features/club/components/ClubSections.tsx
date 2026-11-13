@@ -48,14 +48,17 @@ export function ClubSealGrid({
       {seals.map((s) => {
         const earned = s.times > 0;
         const count = sealCountLabel(s.times);
+        // Mês sem desafio nesta categoria: aparece apagada (as conquistas continuam lá).
+        // === false: API antiga sem o campo não apaga tudo.
+        const off = s.hasChallenge === false;
         return (
           <PressableScale
             key={s.seal.id}
             scaleTo={motion.pressScale.card}
             onPress={() => openSealHistorySheet(s, signedIn)}
-            style={[styles.seal, { width: cell }]}
+            style={[styles.seal, { width: cell }, off && styles.sealOff]}
             accessibilityRole="button"
-            accessibilityLabel={`Selo ${s.seal.name}, ${count}. Ver conquistas`}
+            accessibilityLabel={`Selo ${s.seal.name}, ${count}${off ? ", sem desafio este mês" : ""}. Ver conquistas`}
           >
             <SealBadge seal={s.seal} size={60} locked={!earned} />
             <Text
@@ -270,6 +273,7 @@ function RankRow({
 
 const useStyles = createStyles((t) => ({
   grid: { flexDirection: "row", flexWrap: "wrap", gap: GAP, paddingHorizontal: layout.gutter },
+  sealOff: { opacity: 0.4 },
   seal: {
     backgroundColor: t.colors.surface,
     borderRadius: 24,

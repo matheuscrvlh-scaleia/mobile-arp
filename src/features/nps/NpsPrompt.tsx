@@ -6,6 +6,7 @@ import { kv } from "@/core/storage/kv";
 import {
   Button,
   createStyles,
+  IconButton,
   PressableScale,
   SheetActions,
   SheetText,
@@ -15,79 +16,57 @@ import {
   toast,
   useColors,
 } from "@/design";
-import { DAY_MS } from "@/shared/lib/time";
 
-const KEY = "nps.v1";
-/** Primeira pergunta: depois de 7 dias com o app e 5 aberturas da Início. */
-const FIRST_AFTER_DAYS = 7;
-const FIRST_AFTER_OPENS = 5;
-/** Respondeu: pergunta de novo em ~4 meses. Fechou sem responder: em 30 dias. */
-const AGAIN_AFTER_ANSWER_DAYS = 120;
-const AGAIN_AFTER_DISMISS_DAYS = 30;
+const KEY = "nps.v2";
 const SHOW_DELAY_MS = 2500;
 
-type NpsState = { firstSeen: number; opens: number; nextAt: number };
+/** Mês da abertura ("2026-11"), no relógio do aparelho. */
+const monthOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
-function load(): NpsState | null {
+function lastAskedMonth(): string | null {
   try {
-    const raw = kv.getSync(KEY);
-    return raw ? (JSON.parse(raw) as NpsState) : null;
+    return kv.getSync(KEY);
   } catch {
     return null;
   }
 }
 
-function save(s: NpsState) {
+function markAsked(month: string) {
   try {
-    kv.setSync(KEY, JSON.stringify(s));
+    kv.setSync(KEY, month);
   } catch {
-    // atalho: sem armazenamento, só não lembra (pode perguntar de novo)
+    // atalho: sem armazenamento, só não lembra (pode perguntar de novo; a API guarda uma nota por mês)
   }
-}
-
-function snooze(days: number) {
-  const s = load() ?? { firstSeen: Date.now(), opens: 0, nextAt: 0 };
-  save({ ...s, nextAt: Date.now() + days * DAY_MS });
 }
 
 /** Uma vez por abertura do app, no máximo. */
 let askedThisRun = false;
 
 /**
- * NPS dentro do app (correções V2): pergunta de 0 a 10 para quem está logado, sem insistir.
- * Usado na Início: conta as aberturas e, quando chega a hora, abre a pergunta.
+ * NPS dentro do app (revisão V2): uma vez por mês, na primeira vez que a pessoa
+ * logada abre o app no mês. Respondendo ou fechando no X, só volta no mês
+ * seguinte. Usado na Início.
  */
 export function useNpsPrompt() {
   const signedIn = useSession((s) => s.status === "signedIn");
   useEffect(() => {
     if (!signedIn || askedThisRun) return;
-    const now = Date.now();
-    const s = load() ?? { firstSeen: now, opens: 0, nextAt: now + FIRST_AFTER_DAYS * DAY_MS };
-    const next = { ...s, opens: s.opens + 1 };
-    save(next);
     askedThisRun = true;
-    if (next.opens < FIRST_AFTER_OPENS || now < next.nextAt) return;
+    const month = monthOf(new Date());
+    if (lastAskedMonth() === month) return;
+    markAsked(month);
     const t = setTimeout(openNpsSheet, SHOW_DELAY_MS);
     return () => clearTimeout(t);
   }, [signedIn]);
 }
 
 export function openNpsSheet() {
-  let answered = false;
-  const done = (close: () => void) => {
-    answered = true;
-    close();
-  };
-  sheet.open(({ close }) => <NpsForm onDone={() => done(close)} />, {
-    onClose: () => {
-      if (!answered) snooze(AGAIN_AFTER_DISMISS_DAYS);
-    },
-  });
+  sheet.open(({ close }) => <NpsForm onClose={close} />);
 }
 
 const SCORES = Array.from({ length: 11 }, (_, i) => i);
 
-function NpsForm({ onDone }: { onDone: () => void }) {
+function NpsForm({ onClose }: { onClose: () => void }) {
   const styles = useStyles();
   const colors = useColors();
   const [score, setScore] = useState<number | null>(null);
@@ -100,8 +79,7 @@ function NpsForm({ onDone }: { onDone: () => void }) {
     try {
       const text = comment.trim();
       await appApi.nps({ score, ...(text ? { comment: text } : {}) });
-      snooze(AGAIN_AFTER_ANSWER_DAYS);
-      onDone();
+      onClose();
       toast.show("Obrigado pela sua nota!", "heart");
     } catch {
       setSending(false);
@@ -111,8 +89,19 @@ function NpsForm({ onDone }: { onDone: () => void }) {
 
   return (
     <>
-      <SheetTitle>O que você está achando do app?</SheetTitle>
-      <SheetText>De 0 a 10, quanto você recomendaria o app da ARP para um amigo?</SheetText>
+      <View style={styles.head}>
+        <View style={styles.headText}>
+          <Text variant="bodyStrong">ARP</Text>
+          <Text variant="caption" tone="textMuted">
+            Sua experiência importa
+          </Text>
+        </View>
+        <IconButton icon="x" accessibilityLabel="Fechar sem responder" onPress={onClose} />
+      </View>
+      <SheetTitle>De 0 a 10, quanto você recomendaria a ARP para um amigo ou familiar?</SheetTitle>
+      <SheetText>
+        Sua resposta nos ajuda a melhorar a experiência de todos que visitam a ARP.
+      </SheetText>
       <View style={styles.scores} accessibilityRole="radiogroup">
         {SCORES.map((n) => {
           const on = score === n;
@@ -154,7 +143,7 @@ function NpsForm({ onDone }: { onDone: () => void }) {
       ) : null}
       <SheetActions>
         <Button
-          label="Enviar"
+          label="Enviar avaliação"
           variant="dark"
           disabled={score === null}
           loading={sending}
@@ -166,6 +155,14 @@ function NpsForm({ onDone }: { onDone: () => void }) {
 }
 
 const useStyles = createStyles((t) => ({
+  head: {
+    alignSelf: "stretch",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  headText: { gap: 2 },
   scores: {
     alignSelf: "stretch",
     flexDirection: "row",

@@ -106,7 +106,8 @@ function PrizeDetail({
   const [confirming, setConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
   const missing = total === null ? prize.points : Math.max(0, prize.points - total);
-  const can = total !== null && missing === 0;
+  const soldOut = prize.stock <= 0;
+  const can = total !== null && missing === 0 && !soldOut;
 
   const redeem = async () => {
     setSaving(true);
@@ -160,7 +161,11 @@ function PrizeDetail({
             )}
           />
         ) : !can ? (
-          <Button label={`Faltam ${formatTrevos(missing)}`} variant="soft" disabled />
+          <Button
+            label={soldOut ? "Esgotado" : `Faltam ${formatTrevos(missing)}`}
+            variant="soft"
+            disabled
+          />
         ) : confirming ? (
           <>
             <Text variant="small" tone="textMuted" align="center">

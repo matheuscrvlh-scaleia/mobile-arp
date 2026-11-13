@@ -186,7 +186,7 @@ export default function CircuitScreen() {
         <View style={[styles.callout, { backgroundColor: c.surface }]}>
           <Text variant="bodyStrong">Faça o Circuito Cultural</Text>
           <Text variant="small" tone="textSecondary">
-            Visite os pontos e ganhe o selo Fio Cultural no Clube ARP.
+            Visite as obras e ganhe o selo Fio Cultural no Clube ARP.
           </Text>
           <Button
             label="Ver o desafio"

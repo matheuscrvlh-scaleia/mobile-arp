@@ -26,15 +26,14 @@ const ONBOARDING_NEXT: Partial<Record<ContentPageKey, ContentPageKey>> = { histo
 /** Páginas em que o arquivo é a foto do topo. */
 const PHOTO_PAGES = new Set<ContentPageKey>(["history_full", "sustentarp"]);
 
-/** Páginas em que o arquivo é um link para abrir (PDF ou formulário) e o texto do botão. */
+/** Páginas em que o arquivo é um link para abrir (PDF) e o texto do botão. */
 const LINK_LABEL: Partial<Record<ContentPageKey, string>> = {
   rules: "Baixar as regras (PDF)",
-  sustentarp_friend: "Quero ser amigo do Sustentarp",
 };
 
 /**
  * Texto da ARP (/texto/<chave>: história, história completa, regras,
- * regulamento do Clube, Sustentarp e Amigo do Sustentarp). Com `boasVindas=1`, faz
+ * regulamento do Clube e Sustentarp). Com `boasVindas=1`, faz
  * parte do primeiro acesso: sem voltar, com o botão para seguir.
  */
 export default function ContentPageScreen() {

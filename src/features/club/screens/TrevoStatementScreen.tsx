@@ -75,8 +75,10 @@ export default function TrevoStatementScreen() {
             />
           </View>
           <Text variant="small" tone="textMuted" style={styles.note}>
-            Selos não vencem: viram histórico. Os Trevos ganhos no ano valem para troca até 31/12
-            {query.data.validUntil ? ` (${fullDate(query.data.validUntil)})` : ""}.
+            Selos não vencem: viram histórico.
+            {query.data.validUntil
+              ? ` Os Trevos valem para troca até ${fullDate(query.data.validUntil)}.`
+              : ""}
           </Text>
           {query.data.entries.length === 0 ? (
             <EmptyState

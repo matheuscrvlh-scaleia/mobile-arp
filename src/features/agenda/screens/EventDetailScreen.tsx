@@ -127,7 +127,7 @@ function EventDetailView({ event, refreshControl }: ViewProps) {
           </Rules>
           {event.ticketUrl && !ended ? (
             <Button
-              label="Comprar ingresso"
+              label="Retirar ingresso"
               variant="brand"
               iconLeft="ticket"
               iconRight="external-link"
